@@ -74,3 +74,11 @@ Numerical tests check normalization, known moments, asymptotic conditions and ex
 Ruff is a locked development dependency. Python code uses four-space indentation, a target line length of 100, and organized imports. Long teaching text may exceed the target; keep its wording intact. Run `uv run --locked ruff format .` to apply formatting, and `uv run --locked ruff check .` to check imports and basic code issues. CSS uses expanded blocks with two-space indentation.
 
 Ruff 作为开发依赖锁定。Python 统一采用四空格缩进、100 字符目标行宽和有序导入。较长教学文本允许超过目标行宽，以保留完整语义。使用 `uv run --locked ruff format .` 格式化，使用 `uv run --locked ruff check .` 检查导入和基础代码问题。CSS 使用展开的声明块与两空格缩进。
+
+## Responsive controls / 响应式控制面板
+
+`shared.control_panel` owns a single widget tree. At widths below 1100 CSS pixels or heights below 760 CSS pixels, a compact sticky toolbar replaces the always-visible full panel. A session-persistent toggle reveals the original body in a bounded scrolling region. Desktop rendering ignores the compact visibility choice; resizing never creates duplicate parameter widgets. Both resampling buttons increment the same experiment counter.
+
+`shared.control_panel` 保留同一组控件；窄屏或短窗口显示紧凑吸顶栏，完整参数按需展开。展开状态由独立控件保存，桌面始终显示完整参数。两个抽样入口共享计数器。导航控件按语言使用不同 key，实际页面 ID 保存在独立状态中，写入 URL 前校验；会翻译选项文字的显示尺度与抽样步骤使用必选分段控件。
+
+Standalone HTML generation captures a figure and language configuration when rendering, then builds the file on download without accessing session state in the worker thread. See [browser checks](browser-checks.md) for frontend and responsive regression steps.

@@ -8,7 +8,7 @@ from scipy import stats
 from i18n import tr
 from interactions import comparison_controls, sampling_walkthrough
 from physics import clt_experiment, make_distribution, sample_histogram
-from shared import COLORS, chart, download_figure, header, metric_row
+from shared import COLORS, chart, control_panel, download_figure, header, metric_row
 from state import initialize_controls
 
 DISTRIBUTIONS = {
@@ -52,7 +52,14 @@ def render():
         st.session_state["clt_view"] = legacy_views[old_view]
     distribution_labels = {name: tr(*labels) for name, labels in DISTRIBUTIONS.items()}
 
-    with st.container(border=True, key="controls_clt"):
+    with control_panel(
+        "clt",
+        lambda: (
+            f"{distribution_labels[st.session_state.get('clt_distribution', 'exponential')]} · n = {st.session_state['clt_n']} · R = {st.session_state['clt_repetitions']:,}"
+        ),
+        seed_key="clt_draw",
+        seed_start=0,
+    ):
         c1, c2, c3 = st.columns([1.15, 1.35, 1.15], vertical_alignment="bottom")
         with c1:
             name = st.selectbox(

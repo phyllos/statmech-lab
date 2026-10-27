@@ -385,7 +385,7 @@ TERMS = [
     _term(
         "population_inversion",
         "Population inversion",
-        "粒子数反转／人口反转",
+        "粒子数反转",
         "q/N > 1/2",
         "In this two-level model, more units occupy the excited level than the ground level. Entropy decreases as energy rises along this branch.",
         "在本二能级模型中，激发态单元多于基态单元；沿此分支增加能量时，熵反而下降。",

@@ -7,7 +7,7 @@ import streamlit as st
 from i18n import tr
 from interactions import comparison_controls
 from physics import histogram_density, make_distribution, sample_summary
-from shared import COLORS, chart, download_figure, header, insight, metric_row
+from shared import COLORS, chart, control_panel, download_figure, header, insight, metric_row
 from state import initialize_controls
 
 NAMES = {
@@ -38,14 +38,6 @@ def _shape(name):
         return st.slider(
             tr("Degrees of freedom ν", "自由度 ν"), 1.0, 30.0, step=0.5, key="dist_shape_t"
         )
-    st.caption(
-        {
-            "normal": tr("Reference: μ = 0, σ = 1", "基准：μ = 0，σ = 1"),
-            "uniform": tr("Reference: mean 0, variance 1", "基准：均值 0，方差 1"),
-            "exponential": tr("Reference: λ = 1", "基准：λ = 1"),
-            "cauchy": tr("Location 0, scale 1; mean undefined", "位置 0，尺度 1；均值不存在"),
-        }[name]
-    )
     return 3.0
 
 
@@ -68,27 +60,46 @@ def render():
             "从一段面积到一组数据：让 PDF、CDF 和箱型图讲述同一个概率故事。",
         ),
     )
-    with st.container(border=True, key="controls_distributions"):
-        a, b, c, d = st.columns([1.4, 1.2, 1.1, 0.8], vertical_alignment="bottom")
+    with control_panel(
+        "distributions",
+        lambda: (
+            f"{labels[st.session_state.get('dist_name', 'normal')]} · n = {st.session_state['dist_n']:,}"
+        ),
+        seed_key="dist_seed",
+        seed_start=515,
+    ):
+        a, c, d = st.columns([1.5, 1.1, 0.9], vertical_alignment="bottom")
         with a:
             name = st.selectbox(
                 tr("Population distribution", "选择总体分布"),
                 list(NAMES),
                 format_func=labels.get,
                 key="dist_name",
+                help={
+                    "normal": tr("Reference: μ = 0, σ = 1", "基准：μ = 0，σ = 1"),
+                    "uniform": tr("Reference: mean 0, variance 1", "基准：均值 0，方差 1"),
+                    "exponential": tr("Reference: λ = 1", "基准：λ = 1"),
+                    "cauchy": tr(
+                        "Location 0, scale 1; mean undefined", "位置 0，尺度 1；均值不存在"
+                    ),
+                }.get(st.session_state.get("dist_name", "normal")),
             )
-        with b:
-            shape = _shape(name)
         with c:
             n = st.select_slider(
                 tr("Sample size n", "样本量 n"), [50, 100, 300, 1000, 3000], key="dist_n"
             )
         with d:
-            if st.button(
-                tr("↻ Resample", "↻ 重新抽样"), key="dist_resample", use_container_width=True
-            ):
+            if st.button(tr("↻ Resample", "↻ 重新抽样"), key="dist_resample", width="stretch"):
                 st.session_state["dist_seed"] = st.session_state.get("dist_seed", 515) + 1
-        interval_column, tools_column = st.columns([1.8, 1.2], vertical_alignment="bottom")
+        if name in {"pareto", "lognormal", "student_t"}:
+            shape_column, interval_column, tools_column = st.columns(
+                [1.1, 1.5, 1.2], vertical_alignment="bottom"
+            )
+            with shape_column:
+                shape = _shape(name)
+        else:
+            shape = 3.0
+            interval_column, tools_column = st.columns([1.8, 1.2], vertical_alignment="bottom")
         with interval_column:
             probabilities = st.slider(
                 tr("Probability interval", "概率区间"),

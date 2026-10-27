@@ -7,7 +7,7 @@ from scipy import stats
 
 from i18n import tr
 from physics import make_distribution, population_moments
-from shared import COLORS, chart, download_figure, header, metric_row
+from shared import COLORS, chart, control_panel, download_figure, header, metric_row
 from state import initialize_controls
 
 NAMES = {
@@ -73,7 +73,12 @@ def render():
             "形状、矩和尾部衰减各回答一个问题。用一次抽样，把它们放在一起观察。",
         ),
     )
-    with st.container(border=True, key="controls_tails"):
+    with control_panel(
+        "tails",
+        lambda: f"{labels[st.session_state.get('tail_name', 'pareto')]} · n = 4,000",
+        seed_key="tail_seed",
+        seed_start=1515,
+    ):
         a, b, d = st.columns([1.4, 1.2, 0.8], vertical_alignment="bottom")
         with a:
             name = st.selectbox(
@@ -111,7 +116,7 @@ def render():
             if st.button(
                 tr("↻ Resample", "↻ 重新抽样"),
                 key="tail_resample",
-                use_container_width=True,
+                width="stretch",
                 help=tr("Draw 4,000 new observations", "重新抽取 4,000 个观测值"),
             ):
                 st.session_state["tail_seed"] = st.session_state.get("tail_seed", 1515) + 1

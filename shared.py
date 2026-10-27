@@ -1,5 +1,6 @@
 """Shared presentation components. All scientific calculations live in physics.py."""
 
+from contextlib import contextmanager
 from html import escape
 from pathlib import Path
 
@@ -22,6 +23,43 @@ STYLE = (
     + (Path(__file__).parent / "styles" / "app.css").read_text(encoding="utf-8")
     + "</style>"
 )
+
+
+def _advance_draw(key, initial):
+    st.session_state[key] = st.session_state.get(key, initial) + 1
+
+
+@contextmanager
+def control_panel(lab, summary, *, seed_key, seed_start, rearrange=False):
+    """One set of widgets, with a compact sticky header on narrow/short screens.
+
+    CSS controls visibility only; hiding a body must not delete widgets or reset
+    settings. The compact action uses the same random counter as the full panel.
+    """
+    with st.container(border=True, key=f"controls_{lab}"):
+        with st.container(key=f"compact_controls_{lab}"):
+            summary_slot = st.empty()
+            with st.container(horizontal=True, vertical_alignment="center"):
+                opened = st.toggle(
+                    tr("Parameters", "参数"),
+                    key=f"panel_open_{lab}",
+                    persist_state="session",
+                )
+                st.button(
+                    tr("Rearrange", "重新排列") if rearrange else tr("Resample", "重新抽样"),
+                    icon=":material/refresh:",
+                    key=f"action_compact_draw_{lab}",
+                    on_click=_advance_draw,
+                    args=(seed_key, seed_start),
+                )
+        state = "open" if opened else "closed"
+        with st.container(key=f"control_body_{lab}_{state}"):
+            yield
+        # The controls may initialize their defaults during the body render.
+        summary_slot.markdown(
+            f'<div class="control-summary">{escape(summary())}</div>',
+            unsafe_allow_html=True,
+        )
 
 
 def header(index, title, subtitle):
@@ -178,11 +216,19 @@ def chart(fig, key=None, *, title=None, subtitle=None):
 
 
 def download_figure(fig, stem):
-    exported = style_figure(go.Figure(fig))
+    # Deferred callbacks run outside the script thread: capture language/config
+    # now, and retain an independent figure for the displayed experiment.
+    snapshot = go.Figure(fig)
+    config = chart_config()
+
+    def make_html():
+        return style_figure(go.Figure(snapshot)).to_html(include_plotlyjs=True, config=config)
+
     st.download_button(
         tr("Download interactive chart · HTML", "下载交互图 HTML"),
-        exported.to_html(include_plotlyjs=True, config=chart_config()),
+        data=make_html,
         file_name=f"{stem}.html",
         mime="text/html",
         key=f"download_{stem}",
+        on_click="ignore",
     )

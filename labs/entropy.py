@@ -9,7 +9,7 @@ from scipy.special import xlogy
 
 from i18n import tr
 from physics import sample_microstate, two_level
-from shared import COLORS, chart, download_figure, header, insight, metric_row
+from shared import COLORS, chart, control_panel, download_figure, header, insight, metric_row
 from state import initialize_controls
 
 
@@ -38,7 +38,15 @@ def render():
         )
     )
 
-    with st.container(border=True, key="controls_entropy"):
+    with control_panel(
+        "entropy",
+        lambda: (
+            f"N = {st.session_state['ent_n']} · q = {st.session_state.get('ent_q', st.session_state['ent_n'] // 4)}"
+        ),
+        seed_key="ent_draw",
+        seed_start=0,
+        rearrange=True,
+    ):
         c1, c2, c3 = st.columns([1.2, 1.4, 1], vertical_alignment="bottom")
         with c1:
             n = st.slider(tr("Number of units N", "单元数 N"), 8, 200, key="ent_n")
@@ -51,7 +59,7 @@ def render():
             if st.button(
                 tr("Rearrange", "重新排列"),
                 key="ent_shuffle",
-                use_container_width=True,
+                width="stretch",
                 help=tr("A new arrangement at the same E and N", "保留 E、N，换一种微观排列"),
             ):
                 st.session_state["ent_draw"] = st.session_state.get("ent_draw", 0) + 1
@@ -204,7 +212,7 @@ def render():
             xref="paper",
             y=0.04,
             yref="paper",
-            text=tr("Population inversion · β < 0", "人口反转 · β < 0"),
+            text=tr("Population inversion · β < 0", "粒子数反转 · β < 0"),
             showarrow=False,
             xanchor="right",
             yanchor="bottom",
@@ -259,7 +267,7 @@ def render():
         )
     elif 2 * q > n:
         insight(
-            tr("Population inversion and negative temperature", "人口反转与负温度"),
+            tr("Population inversion and negative temperature", "粒子数反转与负温度"),
             tr(
                 "With more excited than ground-state units, adding energy reduces the number of arrangements and gives a negative entropy slope. This branch requires an upper energy bound; in thermal energy exchange, a negative-temperature state is hotter than every positive-temperature state.",
                 "激发态比基态更多时，继续增加能量反而减少排列数，因此熵斜率为负。这样的负温度分支依赖能量有上界；在热平衡的能量交换意义下，它比任何正温状态更热。",

@@ -1,5 +1,19 @@
 # Release notes / 版本说明
 
+## Unreleased / 未发布
+
+- Keep the active experiment and display scale when switching languages; require a selected language and preserve Pearson's proper name.
+- Add a compact sticky control toolbar on narrow or short screens, with persistent parameter visibility and shared resampling state. Reduce parameter-panel and header spacing.
+- Move fixed distribution reference parameters into help, improve secondary-text contrast, and standardize the Chinese term for population inversion.
+- Generate standalone chart HTML only when requested; downloading does not rerun the experiment.
+- Add responsive-control state tests and an opt-in browser regression script. Browser execution remains to be verified in an environment that permits local browser access.
+
+- 切换语言后保留当前实验与显示尺度；语言始终有选中项，Pearson 保留专有名词大小写。
+- 窄屏或短窗口使用紧凑吸顶控制栏，参数区可展开／收起，与桌面共用抽样状态；收紧面板和标题间距。
+- 固定分布参数移入提示，增强辅助文字对比度，统一“粒子数反转”术语。
+- 点击下载时才生成交互图 HTML，下载不触发实验重新运行。
+- 新增面板状态回归测试与独立浏览器检查脚本；真实浏览器执行仍需在允许本机页面访问的环境验证。
+
 ## v0.1.0 — Initial baseline / 初始基线
 
 - Four interactive experiments: distributions and boxplots; skewness, kurtosis and tails; LLN and CLT; microstates and entropy.
