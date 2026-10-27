@@ -10,13 +10,13 @@ In **Distributions & boxplots**, move the probability-interval endpoints. The PD
 
 在 **分布与箱型图** 中调整累计概率区间端点：PDF 的阴影、CDF 的两个端点及样本图上的区间阴影都对应同一个 x 区间。所有样本点使用统一样式：大小为 5 的圆点、透明度 0.6。围栏外观测仍用紫色；选择区间不再改变散点外观。
 
-The interval slider is the only selection control. Its default 0.25–0.75 interval spans the population IQR; the sample box retains its own estimated quartiles. Alignment, visible range and fences are available under **Display options**.
+The interval slider is the only selection control. Its default 0.25–0.75 interval spans the population IQR; the sample box retains its own estimated quartiles. Alignment, visible range and fences are available under **Display**.
 
 概率区间滑块是唯一的区间选择控件。默认的 0.25–0.75 区间跨越总体 IQR；样本箱体仍使用样本自身估计的分位数。对齐方式、显示范围及围栏开关收在 **显示选项** 中。
 
 ## Retain a reference / 保留一个对照
 
-Open **Compare** beside **Display options**, then **Keep this result**. Resample or change sample size to compare with the dashed reference. For example, in the CLT lab retain n = 1, then change to n = 30 or 100.
+Open **Compare** beside **Display**, then **Keep this result**. Resample or change sample size to compare with the dashed reference. For example, in the CLT lab retain n = 1, then change to n = 30 or 100.
 
 打开 **显示选项** 旁的 **对照**，点击 **保留当前结果**。重新抽样或改变样本量后，可与虚线参照比较。例如在 CLT 中先保留 n = 1，再改成 n = 30 或 100。
 
@@ -77,3 +77,8 @@ At desktop widths of at least 1,100 px and heights of at least 760 px, the exper
 The interface separates immediate results from optional explanations and keeps controls near the active experiment. Related concepts use consistent colors, terminology and chart conventions.
 
 界面将主结果与补充解释分层展示，让控件贴近当前实验；相关概念使用一致的颜色、术语和图形约定。
+
+
+Interval endpoints belong to the selected population probability interval and use teal with white outlines. Purple sample points denote observations beyond the sample's 1.5 IQR fences. Moving the interval changes the PDF area, CDF markers and sample-plot band; it does not change the sample fences. **Show fence lines** hides or shows the dotted thresholds and their labels, while the outlying observations remain visible.
+
+区间端点属于选中的总体概率区间，使用青色白描边；紫色样本点表示落在样本 1.5 IQR 围栏之外的观测。调整区间只联动 PDF 面积、CDF 端点与样本图阴影，不改变样本围栏。“显示围栏线”仅切换阈值点线及标签，保留围栏外观测标记。

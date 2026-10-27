@@ -8,6 +8,7 @@ The app keeps calculations independent from Streamlit. Pages compose those calcu
 | --- | --- |
 | `physics.py` | Pure models, local random generators, sample summaries and histogram normalization / 纯模型、局部随机数、统计摘要与直方图归一化 |
 | `state.py` | Session-local control persistence across navigation / 页面切换时保留会话内参数 |
+| `distribution_ui.py` | Shared bilingual distribution names, base parameters and descriptions / 统一分布名称、原始参数与说明 |
 | `i18n.py` | Language choice and bilingual display text / 语言选择与双语文本 |
 | `shared.py` | Chart configuration, metric readouts, headings and HTML export / 图形配置、指标读数、标题及 HTML 导出 |
 | `styles/app.css` | Responsive layout, spacing, colors and control-bar positioning / 响应式布局、间距、颜色与参数栏定位 |
@@ -83,4 +84,19 @@ Ruff 作为开发依赖锁定。Python 统一采用四空格缩进、100 字符�
 
 Navigation uses per-language widget keys and a validated canonical page ID. Display scales and sampling steps use required segmented controls to preserve logical values across translation.
 
-Standalone HTML generation captures a figure and language configuration when rendering, then builds the file on download without accessing session state in the worker thread. See [browser checks](browser-checks.md) for frontend and responsive regression steps.
+Standalone HTML generation captures a figure and language configuration when rendering, then builds the file on download without accessing session state in the worker thread.
+
+
+## Visual semantics / 视觉语义
+
+In the distributions experiment, use teal for population theory and the selected probability interval (area, CDF endpoints and sample-plot band), orange for observations, purple for observations beyond sample IQR fences, and muted dotted lines for those fences. CDF endpoints have a white outline so they remain distinct from the theoretical curve. Interval selection and sample fences are independent; the fence switch controls guide lines and labels only. A point beyond the fences is not necessarily invalid data.
+
+在分布与箱型图实验中，青色表示总体理论及选中概率区间；橙色表示样本；紫色标记样本围栏外观测；灰色点线表示围栏。CDF 端点使用青色配白描边。概率区间与样本围栏独立，围栏开关仅控制辅助线与标签，围栏外观测不等于错误数据。分布名称、原始参数与对照说明由 `distribution_ui.py` 统一生成，计算约定仍属于 `physics.py`。
+
+## Manual UI checks / 手动界面检查
+
+- Switch English/Chinese and navigate away/back: keep the experiment, parameters and display scale. / 切换语言及往返页面后保留实验、参数和显示尺度。
+- Inspect desktop, narrow and short windows, including scrolling with parameters expanded: check overlap and usable chart space. / 检查桌面、窄屏及矮屏，包含参数展开时滚动，确认控件不重叠、图表有可用空间。
+- Exercise resampling, saved comparisons and HTML downloads. / 检查抽样、保留对照和 HTML 下载。
+- Check phone legends, quartile labels, hover/touch readouts and the distinct interval/fence colors. / 检查手机图例、四分位标注、悬浮或触控读数，以及区间／围栏配色的区分。
+- Record the browser, viewport sizes and scenarios actually checked; mark anything unverified. Passing AppTest does not establish visual correctness. / 记录实际检查的浏览器、尺寸与场景；注明未验证项，不能用 AppTest 通过代替视觉检查。

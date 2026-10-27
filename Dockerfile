@@ -11,7 +11,7 @@ FROM python:3.12-slim AS runtime
 WORKDIR /app
 RUN useradd --create-home --uid 10001 statmech
 COPY --from=build /app/.venv /app/.venv
-COPY app.py physics.py shared.py state.py i18n.py glossary.py interactions.py ./
+COPY app.py physics.py shared.py state.py i18n.py glossary.py interactions.py distribution_ui.py ./
 COPY labs/ ./labs/
 COPY styles/ ./styles/
 COPY .streamlit/config.toml ./.streamlit/config.toml

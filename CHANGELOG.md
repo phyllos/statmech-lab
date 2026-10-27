@@ -2,21 +2,21 @@
 
 ## Unreleased / 未发布
 
-- Restore fixed distribution parameters in selector labels and identify aligned axes near the charts. Standardize the toolbar with right-aligned desktop actions and a two-row compact grid based on panel width.
+- Preserve the active experiment, display scale and sampling walkthrough across language changes; require a selected language and retain Pearson's capitalization.
+- Share a persistent parameter panel across experiments, with right-aligned desktop actions and a two-row compact layout based on panel width. Parameters start expanded and can be collapsed.
+- Centralize distribution names, base parameters and comparison descriptions; show fixed parameters in selectors and identify aligned axes near charts.
+- Use teal CDF endpoint markers with white outlines and purple beyond-fence observations. The fence toggle controls guide lines and labels only.
+- Improve secondary-text contrast and standardize the Chinese term for population inversion.
+- Generate chart HTML on demand without rerunning the experiment.
+- Add interaction/state regression tests; consolidate manual UI checks in the architecture notes and remove the separate browser script and guide.
 
-- Start parameters expanded and consolidate resampling, display options and comparison in one wrapping toolbar. Remove the overlapping summary and use inline distribution selectors on narrow screens.
-
-- Keep the active experiment and display scale when switching languages; require a selected language and preserve Pearson's proper name.
-- Add a compact sticky control toolbar on narrow or short screens, with persistent parameter visibility and shared resampling state. Reduce parameter-panel and header spacing.
-- Move fixed distribution reference parameters into help, improve secondary-text contrast, and standardize the Chinese term for population inversion.
-- Generate standalone chart HTML only when requested; downloading does not rerun the experiment.
-- Add responsive-control state tests and an opt-in browser regression script. Browser execution remains to be verified in an environment that permits local browser access.
-
-- 切换语言后保留当前实验与显示尺度；语言始终有选中项，Pearson 保留专有名词大小写。
-- 窄屏或短窗口使用紧凑吸顶控制栏，参数区可展开／收起，与桌面共用抽样状态；收紧面板和标题间距。
-- 固定分布参数移入提示，增强辅助文字对比度，统一“粒子数反转”术语。
-- 点击下载时才生成交互图 HTML，下载不触发实验重新运行。
-- 新增面板状态回归测试与独立浏览器检查脚本；真实浏览器执行仍需在允许本机页面访问的环境验证。
+- 切换语言后保留当前实验、显示尺度及抽样演示；语言保持选中，Pearson 保留正确大小写。
+- 实验共用参数面板，桌面操作靠右，窄面板按实际宽度固定两行；参数默认展开，可手动收起。
+- 统一分布名称、原始参数与对照说明；固定参数直接显示在选择框，对齐坐标在图表附近说明。
+- CDF 区间端点采用青色白描边，围栏外观测保留紫色；围栏开关仅控制辅助线与标签。
+- 改善辅助文字对比度，统一“粒子数反转”术语。
+- 按需生成交互图 HTML，下载不触发实验重跑。
+- 补充交互与状态回归测试；手动界面检查合并到架构说明，移除独立浏览器脚本与指南。
 
 ## v0.1.0 — Initial baseline / 初始基线
 

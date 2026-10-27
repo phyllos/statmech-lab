@@ -5,18 +5,22 @@ import plotly.graph_objects as go
 import streamlit as st
 from scipy import stats
 
-from i18n import tr
+from distribution_ui import distribution_description, distribution_label
+from i18n import language, tr
 from interactions import comparison_controls, sampling_walkthrough
 from physics import clt_experiment, make_distribution, sample_histogram
 from shared import COLORS, chart, control_panel, download_figure, header, metric_row
 from state import initialize_controls
 
-DISTRIBUTIONS = {
-    "exponential": ("Exponential", "指数 · Exponential"),
-    "uniform": ("Uniform", "均匀 · Uniform"),
-    "normal": ("Normal", "正态 · Normal"),
-    "pareto": ("Pareto · power-law tail", "Pareto · 幂律尾"),
-    "cauchy": ("Cauchy · no finite mean", "Cauchy · 无有限均值"),
+DISTRIBUTIONS = ("exponential", "uniform", "normal", "pareto", "cauchy")
+
+# Historical session values only; new display labels come from distribution_ui.
+LEGACY_DISTRIBUTIONS = {
+    "指数 · Exponential": "exponential",
+    "均匀 · Uniform": "uniform",
+    "正态 · Normal": "normal",
+    "Pareto · 幂律尾": "pareto",
+    "Cauchy · 无有限均值": "cauchy",
 }
 
 
@@ -42,15 +46,15 @@ def render():
     )
 
     # Migrate old translated option values once; internal values are language-independent.
-    legacy_distributions = {labels[1]: name for name, labels in DISTRIBUTIONS.items()}
     old_distribution = st.session_state.get("clt_distribution")
-    if old_distribution in legacy_distributions:
-        st.session_state["clt_distribution"] = legacy_distributions[old_distribution]
+    if old_distribution in LEGACY_DISTRIBUTIONS:
+        st.session_state["clt_distribution"] = LEGACY_DISTRIBUTIONS[old_distribution]
     legacy_views = {"样本均值": "means", "标准化均值": "standardized"}
     old_view = st.session_state.get("clt_view")
     if old_view in legacy_views:
         st.session_state["clt_view"] = legacy_views[old_view]
-    distribution_labels = {name: tr(*labels) for name, labels in DISTRIBUTIONS.items()}
+    lang = language()
+    distribution_labels = {name: distribution_label(name, lang) for name in DISTRIBUTIONS}
 
     with control_panel(
         "clt",
@@ -101,8 +105,8 @@ def render():
     settings = dict(name=name, shape=shape, n=n, repetitions=repetitions, seed=seed)
 
     def describe(saved):
-        parameter = f", α = {saved['shape']:g}" if saved["name"] == "pareto" else ""
-        return f"{distribution_labels[saved['name']]}{parameter} · n = {saved['n']} · R = {saved['repetitions']:,} · seed = {saved['seed']}"
+        model = distribution_description(saved["name"], lang, shape=saved["shape"])
+        return f"{model} · n = {saved['n']} · R = {saved['repetitions']:,} · seed = {saved['seed']}"
 
     with tools_row:
         with st.popover(tr("Display", "显示选项"), icon=":material/tune:", key="display_clt"):

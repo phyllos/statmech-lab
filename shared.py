@@ -13,6 +13,7 @@ COLORS = {
     "theory": "#087E8B",
     "sample": "#E89B3F",
     "accent": "#7868B0",
+    "beyond_fences": "#7868B0",  # Sample classification, never interval selection.
     "muted": "#718493",
     "ink": "#182B3A",
 }

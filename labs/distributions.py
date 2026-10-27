@@ -4,46 +4,14 @@ import numpy as np
 import plotly.graph_objects as go
 import streamlit as st
 
-from i18n import tr
+from distribution_ui import distribution_description, distribution_help, distribution_label
+from i18n import language, tr
 from interactions import comparison_controls
 from physics import histogram_density, make_distribution, sample_summary
 from shared import COLORS, chart, control_panel, download_figure, header, insight, metric_row
 from state import initialize_controls
 
-NAMES = {
-    "normal": ("Normal", "Normal · 正态"),
-    "uniform": ("Uniform", "Uniform · 均匀"),
-    "exponential": ("Exponential", "Exponential · 指数"),
-    "lognormal": ("Lognormal", "Lognormal · 对数正态"),
-    "pareto": ("Pareto", "Pareto · 帕累托"),
-    "student_t": ("Student t", "Student t · t 分布"),
-    "cauchy": ("Cauchy", "Cauchy · 柯西"),
-}
-
-
-# Fixed base-model parameters stay visible without a separate reference column.
-# Adjustable shape parameters remain on their sliders.
-BASE_PARAMETERS = {
-    "normal": "μ = 0, σ = 1",
-    "uniform": "[−√3, √3]",
-    "exponential": "λ = 1",
-    "cauchy": "x₀ = 0, γ = 1",
-}
-
-
-def _choice_label(name):
-    chinese = {
-        "normal": "正态",
-        "uniform": "均匀",
-        "exponential": "指数",
-        "lognormal": "对数正态",
-        "pareto": "Pareto",
-        "student_t": "Student t",
-        "cauchy": "Cauchy",
-    }
-    label = tr(NAMES[name][0], chinese[name])
-    parameters = BASE_PARAMETERS.get(name)
-    return f"{label} · {parameters}" if parameters else label
+DISTRIBUTIONS = ("normal", "uniform", "exponential", "lognormal", "pareto", "student_t", "cauchy")
 
 
 def _shape(name):
@@ -76,9 +44,11 @@ def render():
         dist_fences=True,
         dist_view="body",
     )
-    labels = {name: tr(*pair) for name, pair in NAMES.items()}
-    # Freeze translated labels for widget serialization outside the render context.
-    choice_labels = {name: _choice_label(name) for name in NAMES}
+    # Capture the language before widget serialization can leave the render context.
+    lang = language()
+    choice_labels = {
+        name: distribution_label(name, lang, parameters=True) for name in DISTRIBUTIONS
+    }
     header(
         "01",
         tr("Distributions & boxplots", "分布与箱型图"),
@@ -97,17 +67,10 @@ def render():
         with a:
             name = st.selectbox(
                 tr("Distribution", "总体分布"),
-                list(NAMES),
+                list(DISTRIBUTIONS),
                 format_func=choice_labels.get,
                 key="dist_name",
-                help={
-                    "normal": tr("Reference: μ = 0, σ = 1", "基准：μ = 0，σ = 1"),
-                    "uniform": tr("Reference: mean 0, variance 1", "基准：均值 0，方差 1"),
-                    "exponential": tr("Reference: λ = 1", "基准：λ = 1"),
-                    "cauchy": tr(
-                        "Location 0, scale 1; mean undefined", "位置 0，尺度 1；均值不存在"
-                    ),
-                }.get(st.session_state.get("dist_name", "normal")),
+                help=distribution_help(st.session_state.get("dist_name", "normal"), lang),
             )
         with c:
             n = st.select_slider(
@@ -165,7 +128,12 @@ def render():
                     ),
                 )
                 show_fences = st.toggle(
-                    tr("Show 1.5 IQR fences", "显示 1.5 IQR 围栏"), key="dist_fences"
+                    tr("Show fence lines", "显示围栏线"),
+                    key="dist_fences",
+                    help=tr(
+                        "Show the sample thresholds Q₁ − 1.5 IQR and Q₃ + 1.5 IQR. Points beyond them remain marked; this does not change the selected probability interval.",
+                        "显示样本阈值 Q₁ − 1.5 IQR 与 Q₃ + 1.5 IQR。围栏外观测仍保留标记；不影响选中的概率区间。",
+                    ),
                 )
     rv = make_distribution(name, shape, align)
     seed = st.session_state.get("dist_seed", 515)
@@ -174,10 +142,9 @@ def render():
     settings = dict(name=name, shape=shape, align=align, n=n, seed=seed)
 
     def describe(saved):
-        symbol = {"pareto": "α", "lognormal": "σ", "student_t": "ν"}.get(saved["name"])
-        parameter = f", {symbol} = {saved['shape']:g}" if symbol else ""
+        model = distribution_description(saved["name"], lang, shape=saved["shape"])
         scale = tr("aligned", "已对齐") if saved["align"] else tr("original scale", "原始尺度")
-        return f"{labels[saved['name']]}{parameter} · {scale} · n = {saved['n']:,} · seed = {saved['seed']}"
+        return f"{model} · {scale} · n = {saved['n']:,} · seed = {saved['seed']}"
 
     with tools_row:
         reference = comparison_controls(
@@ -316,7 +283,7 @@ def render():
             x=[left, right],
             y=list(probabilities),
             mode="markers",
-            marker=dict(size=9, color=COLORS["accent"]),
+            marker=dict(size=9, color=COLORS["theory"], line=dict(color="white", width=1.5)),
             name=tr("Interval endpoints", "区间端点"),
             hovertemplate="x=%{x:.3g}<br>F(x)=%{y:.2f}<extra></extra>",
         )
@@ -378,7 +345,7 @@ def render():
     outliers = (sample < summary["lower_fence"]) | (sample > summary["upper_fence"])
     for mask, label, color in [
         (~outliers, tr("Sample points", "样本点"), COLORS["sample"]),
-        (outliers, tr("Beyond fences", "围栏外观测"), COLORS["accent"]),
+        (outliers, tr("Beyond fences", "围栏外观测"), COLORS["beyond_fences"]),
     ]:
         box.add_trace(
             go.Scatter(

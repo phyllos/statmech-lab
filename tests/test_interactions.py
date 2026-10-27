@@ -315,3 +315,52 @@ def test_hover_precision_does_not_round_scientific_data():
     fig.update_xaxes(hoverformat=",d")
     style_figure(fig)
     assert fig.layout.xaxis.hoverformat == ",d"
+
+
+def test_interval_and_fence_visual_roles_remain_independent(app):
+    cdf = figure(app, "dist_cdf")
+    endpoints = cdf["data"][2]
+    box = figure(app, "dist_box")
+    observations = box["data"][:2]
+    fences = [s for s in box["layout"]["shapes"] if s["type"] == "line"]
+    assert endpoints["marker"]["color"] == cdf["data"][0]["line"]["color"]
+    assert endpoints["marker"]["color"] != observations[1]["marker"]["color"]
+    assert endpoints["marker"]["line"]["color"] == "white"
+    assert endpoints["marker"]["line"]["width"] > 0
+    app.slider(key="dist_interval").set_value((0.1, 0.9)).run()
+    changed = figure(app, "dist_box")
+    assert changed["data"][:2] == observations
+    assert [s for s in changed["layout"]["shapes"] if s["type"] == "line"] == fences
+    selected_cdf = figure(app, "dist_cdf")
+    app.toggle(key="dist_fences").set_value(False).run()
+    assert figure(app, "dist_cdf") == selected_cdf
+    assert figure(app, "dist_box")["data"][:2] == observations
+    app.toggle(key="dist_fences").set_value(True).run()
+    assert figure(app, "dist_cdf") == selected_cdf
+    assert [s for s in figure(app, "dist_box")["layout"]["shapes"] if s["type"] == "line"] == fences
+    assert not app.exception
+
+
+def test_distribution_names_match_selectors_charts_and_saved_descriptions(app):
+    lang = app.session_state["language"]
+    expected = "Normal" if lang == "en" else "正态"
+    selected = app.selectbox(key="dist_name").options[0]
+    assert selected == f"{expected} · μ = 0, σ = 1"
+    app.button(key="action_keep_distributions").click().run()
+    comparison = next(
+        e for e in app.get("popover") if e.proto.id.endswith("-comparison_distributions")
+    )
+    assert any(selected in e.value for e in comparison.caption)
+    open_lab(app, "tails")
+    app.selectbox(key="tail_name").set_value("normal").run()
+    assert expected in app.selectbox(key="tail_name").options
+    assert any(t["name"] == expected for t in figure(app, "tail_pdf")["data"])
+    open_lab(app, "clt")
+    app.selectbox(key="clt_distribution").set_value("normal").run()
+    assert expected in app.selectbox(key="clt_distribution").options
+    app.button(key="action_keep_clt").click().run()
+    comparison = next(e for e in app.get("popover") if e.proto.id.endswith("-comparison_clt"))
+    assert any(selected in e.value for e in comparison.caption)
+    if lang == "zh":
+        assert all("Normal" not in e.value for e in comparison.caption)
+    assert not app.exception

@@ -5,19 +5,13 @@ import plotly.graph_objects as go
 import streamlit as st
 from scipy import stats
 
-from i18n import tr
+from distribution_ui import distribution_label
+from i18n import language, tr
 from physics import make_distribution, population_moments
 from shared import COLORS, chart, control_panel, download_figure, header, metric_row
 from state import initialize_controls
 
-NAMES = {
-    "pareto": ("Pareto", "Pareto · 帕累托"),
-    "lognormal": ("Lognormal", "Lognormal · 对数正态"),
-    "student_t": ("Student t", "Student t · t 分布"),
-    "cauchy": ("Cauchy", "Cauchy · 柯西"),
-    "normal": ("Normal", "Normal · 正态"),
-    "exponential": ("Exponential", "Exponential · 指数"),
-}
+DISTRIBUTIONS = ("pareto", "lognormal", "student_t", "cauchy", "normal", "exponential")
 
 
 def _fmt(value):
@@ -64,7 +58,7 @@ def render():
         tail_sigma=0.8,
         tail_nu=5.0,
     )
-    labels = {name: tr(*pair) for name, pair in NAMES.items()}
+    labels = {name: distribution_label(name, language()) for name in DISTRIBUTIONS}
     header(
         "02",
         tr("Skewness, kurtosis & tails", "偏度、峰度与尾部"),
@@ -83,7 +77,7 @@ def render():
         with a:
             name = st.selectbox(
                 tr("Distribution", "研究分布"),
-                list(NAMES),
+                list(DISTRIBUTIONS),
                 format_func=labels.get,
                 key="tail_name",
             )
