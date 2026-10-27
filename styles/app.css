@@ -306,8 +306,7 @@ p {
   display: block;
 }
 
-/* The sticky wrapper spans the experiment, with one set of parameter widgets.
-   Narrow/short windows show a persistent compact toolbar and an optional body. */
+/* Container width (including sidebar effects) determines the panel layout. */
 [class*="st-key-workspace_"] > [data-testid="stLayoutWrapper"]:has(> [class*="st-key-controls_"]) {
   position: sticky;
   top: 3.75rem;
@@ -315,70 +314,114 @@ p {
 }
 
 [data-testid="stVerticalBlock"][class*="st-key-controls_"] {
+  container-type: inline-size;
+  container-name: parameter-panel;
   background: #f7f8fa;
   box-shadow: 0 4px 10px #182b3a0a;
-  padding: .6rem .8rem;
-  gap: .45rem;
+  padding: .75rem;
+  gap: .75rem;
 }
 
-[class*="st-key-control_body_"] {
-  gap: .45rem;
-}
-
+[class*="st-key-control_body_"],
 [class*="st-key-control_body_"] [data-testid="stVerticalBlock"] {
-  gap: .45rem;
+  gap: .75rem;
 }
 
-/* The action row is shared by desktop and phone; allow whole controls to wrap. */
-[class*="st-key-control_toolbar_"] {
-  gap: .5rem .65rem;
+/* Stable slots: Parameters left; Resample, Display and Compare right.
+   Optional actions leave zero-width tracks, rather than shifting the group. */
+[data-testid="stHorizontalBlock"][class*="st-key-control_toolbar_"] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) repeat(3, max-content);
   align-items: center;
-  padding-bottom: .25rem;
+  gap: .5rem;
+  padding-bottom: .65rem;
+  border-bottom: 1px solid #e1e8ec;
 }
 
-[data-testid="stLayoutWrapper"]:has(> [class*="st-key-panel_toggle_"]) {
+[class*="st-key-control_toolbar_"] > * {
+  width: auto !important;
+  min-width: 0;
+}
+
+[class*="st-key-panel_toggle_"] {
+  min-height: 2.75rem;
+  justify-content: center;
+}
+
+[class*="st-key-control_toolbar_"] button {
+  min-height: 2.75rem;
+  white-space: nowrap;
+}
+
+/* A restrained accent identifies the action that generates new observations. */
+[class*="st-key-control_toolbar_"] .st-key-dist_resample button,
+[class*="st-key-control_toolbar_"] .st-key-tail_resample button,
+[class*="st-key-control_toolbar_"] .st-key-clt_resample button,
+[class*="st-key-control_toolbar_"] .st-key-ent_shuffle button {
+  color: #086c77;
+  background: #eaf4f4;
+  border-color: #9dc7cc;
+}
+
+[data-testid="stLayoutWrapper"]:has(> [class*="st-key-control_body_"][class*="_closed"]) {
   display: none;
 }
 
-@media (max-width: 1099px), (max-height: 759px) {
-  [class*="st-key-workspace_"] > [data-testid="stLayoutWrapper"]:has(> [class*="st-key-controls_"]) {
-    top: 3.5rem;
+/* Two deliberate rows on compact panels, never an accidental 3 + 1 wrap. */
+@container parameter-panel (max-width: 680px) {
+  [data-testid="stHorizontalBlock"][class*="st-key-control_toolbar_"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .5rem .75rem;
   }
-  [data-testid="stLayoutWrapper"]:has(> [class*="st-key-panel_toggle_"]) {
-    display: flex;
-    flex: 0 0 auto;
-    min-height: 2.75rem;
-    align-items: center;
+  [class*="st-key-control_toolbar_"] > :nth-child(2) {
+    justify-self: end;
   }
-  [class*="st-key-control_toolbar_"] button {
-    min-height: 2.75rem;
+  [class*="st-key-control_toolbar_"] > :nth-child(n+3) [data-testid="stPopover"],
+  [class*="st-key-control_toolbar_"] > :nth-child(n+3) button {
+    width: 100%;
   }
-  [data-testid="stLayoutWrapper"]:has(> [class*="st-key-control_body_"][class*="_closed"]) {
-    display: none;
+  [class*="st-key-control_toolbar_"] > :last-child:nth-child(3) {
+    grid-column: 1 / -1;
   }
   [data-testid="stLayoutWrapper"]:has(> [class*="st-key-control_body_"][class*="_open"]) {
     max-height: 36vh;
     max-height: 36dvh;
     overflow-y: auto;
-    padding: .35rem .15rem;
+    padding: .2rem .15rem;
     scrollbar-gutter: stable;
   }
-}
-
-/* Inline only the distribution selector, leaving sliders room for their values.
-   A narrow grid track lets long bilingual choices truncate within the select. */
-@media (max-width: 1099px) {
+  /* Stack parameter columns according to available panel space, not viewport. */
+  [class*="st-key-control_body_"] [data-testid="stHorizontalBlock"] {
+    flex-direction: column;
+    align-items: stretch;
+    gap: .75rem;
+  }
+  [class*="st-key-control_body_"] [data-testid="stColumn"] {
+    width: 100% !important;
+    flex: 1 1 auto !important;
+    min-width: 0;
+  }
   [class*="st-key-control_body_"] [data-testid="stSelectbox"] {
     display: grid;
-    grid-template-columns: minmax(0, 9rem) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 6.5rem) minmax(0, 1fr);
     align-items: center;
-    column-gap: .65rem;
+    column-gap: .5rem;
   }
   [class*="st-key-control_body_"] [data-testid="stSelectbox"] > label {
     margin-bottom: 0;
   }
   [class*="st-key-control_body_"] [data-testid="stSelectbox"] > div {
     min-width: 0;
+  }
+}
+
+@media (max-height: 759px) {
+  [data-testid="stLayoutWrapper"]:has(> [class*="st-key-control_body_"][class*="_open"]) {
+    max-height: 36vh;
+    max-height: 36dvh;
+    overflow-y: auto;
+    padding: .2rem .15rem;
+    scrollbar-gutter: stable;
   }
 }
 

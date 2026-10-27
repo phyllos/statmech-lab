@@ -77,8 +77,10 @@ Ruff 作为开发依赖锁定。Python 统一采用四空格缩进、100 字符�
 
 ## Responsive controls / 响应式控制面板
 
-`shared.control_panel` owns a single widget tree. At widths below 1100 CSS pixels or heights below 760 CSS pixels, the shared sticky toolbar also shows a parameter toggle. Parameters start expanded; the session-persistent toggle controls the original body in a bounded scrolling region. Display and comparison popovers remain in the toolbar, outside that scrolling body. Desktop rendering ignores the compact visibility choice; resizing never creates duplicate parameter widgets. One resampling button serves all viewport sizes. No duplicate summary competes with the action row; whole controls wrap with explicit gaps.
+`shared.control_panel` owns one widget tree and one resampling action. The parameter toggle is available at every size, starts expanded, and persists across navigation and language changes. The panel establishes a CSS query container: above 680px of usable panel width, the toggle sits on the left and the action group on the right. At 680px or less, a two-column grid places Parameters/Resample in row one and Display/Compare in row two. Optional actions do not leave orphan buttons. Narrow panels and short windows bound the parameter body's height; menus stay outside the scrolling body. Saved-comparison status appears inside the popover so the trigger keeps its width.
 
-`shared.control_panel` 保留同一组控件；窄屏或短窗口在共用吸顶工具栏中显示参数开关，默认展开。展开状态由独立控件保存，桌面始终显示完整参数。抽样、显示选项与对照位于同一可换行工具栏；所有尺寸使用同一个抽样入口。分布标签与下拉框在窄屏同排，滑条仍保留独立读数空间。导航控件按语言使用不同 key，实际页面 ID 保存在独立状态中，写入 URL 前校验；会翻译选项文字的显示尺度与抽样步骤使用必选分段控件。
+`shared.control_panel` 使用同一组参数和抽样控件。参数默认展开，各尺寸均可收起，并保留会话选择。按面板实际可用宽度切换排版：宽于 680px 时参数开关靠左、操作靠右；窄面板固定两列，首行是参数／抽样，次行是显示／对照。窄面板或短窗口限制参数区域高度，弹窗入口始终保留。固定分布参数直接显示在选择框；坐标对齐时在图表附近说明，避免把原始参数与转换后的坐标混淆。
+
+Navigation uses per-language widget keys and a validated canonical page ID. Display scales and sampling steps use required segmented controls to preserve logical values across translation.
 
 Standalone HTML generation captures a figure and language configuration when rendering, then builds the file on download without accessing session state in the worker thread. See [browser checks](browser-checks.md) for frontend and responsive regression steps.

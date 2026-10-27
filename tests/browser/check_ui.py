@@ -80,7 +80,11 @@ def main():
                         .locator("..")
                         .bounding_box()
                     )
-                    assert body and body["height"] <= height * 0.36 + 24
+                    panel_width = page.locator(f".st-key-controls_{lab}").evaluate(
+                        "el => el.clientWidth - parseFloat(getComputedStyle(el).paddingLeft) - parseFloat(getComputedStyle(el).paddingRight)"
+                    )
+                    if panel_width <= 680 or height < 760:
+                        assert body and body["height"] <= height * 0.36 + 24
 
                     # Top-level actions must occupy separate boxes after wrapping.
                     items = [
@@ -105,6 +109,13 @@ def main():
                             ) - max(box["y"], previous["y"])
                             assert overlap_x <= 0 or overlap_y <= 0, (box, previous)
                         boxes.append(box)
+                    if panel_width <= 680:
+                        assert abs(boxes[0]["y"] - boxes[1]["y"]) < 5
+                        if len(boxes) == 4:
+                            assert abs(boxes[2]["y"] - boxes[3]["y"]) < 5
+                            assert boxes[2]["y"] >= boxes[0]["y"] + boxes[0]["height"]
+                    else:
+                        assert all(abs(box["y"] - boxes[0]["y"]) < 5 for box in boxes)
                     page.screenshot(
                         path=str(args.output / f"{lab}-{lang}-{width}x{height}-open.png")
                     )
@@ -129,7 +140,7 @@ def main():
         page.set_viewport_size({"width": 1440, "height": 1000})
         page.goto(f"{args.url}/?lang=en&lab=distributions")
         expect(page.locator(".st-key-control_toolbar_distributions")).to_be_visible()
-        expect(page.locator(".st-key-panel_toggle_distributions")).to_be_hidden()
+        expect(page.locator(".st-key-panel_toggle_distributions")).to_be_visible()
         expect(page.locator(".st-key-control_body_distributions_open")).to_be_visible()
         page.screenshot(path=str(args.output / "desktop.png"))
         browser.close()

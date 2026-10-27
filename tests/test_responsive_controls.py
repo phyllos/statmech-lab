@@ -86,3 +86,29 @@ def test_english_kurtosis_retains_proper_name():
     assert "Population Pearson kurtosis" in copy
     assert "pearson" not in copy
     assert "Pearson kurtosis" in app.metric[0].label
+
+
+@pytest.mark.parametrize("lang", ["en", "zh"])
+def test_fixed_parameters_remain_visible_and_alignment_is_explicit(lang):
+    app = AppTest.from_file(str(APP), default_timeout=20)
+    app.query_params = {"lab": "distributions", "lang": lang}
+    app.run()
+    choices = app.selectbox(key="dist_name").options
+    assert "μ = 0, σ = 1" in choices[0]
+    assert "[−√3, √3]" in choices[1]
+    assert "λ = 1" in choices[2]
+    assert "x₀ = 0, γ = 1" in choices[-1]
+    app.selectbox(key="dist_name").set_value("exponential").run()
+    app.toggle(key="dist_align").set_value(True).run()
+    caption = "\n".join(e.value for e in app.caption)
+    assert ("Aligned axes" if lang == "en" else "坐标已对齐") in caption
+    assert ("base-distribution parameters" if lang == "en" else "原始分布参数") in caption
+    other = "zh" if lang == "en" else "en"
+    app.button_group(key="language").set_value(other).run()
+    app.button(key="dist_resample").click().run()
+    assert app.selectbox(key="dist_name").value == "exponential"
+    assert app.toggle(key="dist_align").value
+    app.toggle(key="dist_align").set_value(False).run()
+    caption = "\n".join(e.value for e in app.caption)
+    assert "Aligned axes" not in caption and "坐标已对齐" not in caption
+    assert not app.exception

@@ -2,6 +2,8 @@
 
 ## Unreleased / 未发布
 
+- Restore fixed distribution parameters in selector labels and identify aligned axes near the charts. Standardize the toolbar with right-aligned desktop actions and a two-row compact grid based on panel width.
+
 - Start parameters expanded and consolidate resampling, display options and comparison in one wrapping toolbar. Remove the overlapping summary and use inline distribution selectors on narrow screens.
 
 - Keep the active experiment and display scale when switching languages; require a selected language and preserve Pearson's proper name.

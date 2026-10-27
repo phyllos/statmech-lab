@@ -28,8 +28,7 @@ def comparison_controls(lab, settings, describe, *, model_keys):
     reference = st.session_state.get(key)
     compatible = reference is not None and all(reference[k] == settings[k] for k in model_keys)
     label = tr("Compare", "对照")
-    if reference:
-        label += tr(" · saved", " · 已保留") if compatible else tr(" · paused", " · 已暂停")
+    # Keep the trigger width stable; saved/paused details belong inside the popover.
     with st.popover(label, icon=":material/compare_arrows:", key=f"comparison_{lab}"):
         st.caption(
             tr(

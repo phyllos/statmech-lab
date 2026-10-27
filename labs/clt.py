@@ -105,9 +105,7 @@ def render():
         return f"{distribution_labels[saved['name']]}{parameter} · n = {saved['n']} · R = {saved['repetitions']:,} · seed = {saved['seed']}"
 
     with tools_row:
-        with st.popover(
-            tr("Display options", "显示选项"), icon=":material/tune:", key="display_clt"
-        ):
+        with st.popover(tr("Display", "显示选项"), icon=":material/tune:", key="display_clt"):
             if not finite and st.session_state.get("clt_view") == "standardized":
                 st.session_state["clt_view"] = "means"
             view_labels = {

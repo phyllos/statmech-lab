@@ -21,6 +21,31 @@ NAMES = {
 }
 
 
+# Fixed base-model parameters stay visible without a separate reference column.
+# Adjustable shape parameters remain on their sliders.
+BASE_PARAMETERS = {
+    "normal": "μ = 0, σ = 1",
+    "uniform": "[−√3, √3]",
+    "exponential": "λ = 1",
+    "cauchy": "x₀ = 0, γ = 1",
+}
+
+
+def _choice_label(name):
+    chinese = {
+        "normal": "正态",
+        "uniform": "均匀",
+        "exponential": "指数",
+        "lognormal": "对数正态",
+        "pareto": "Pareto",
+        "student_t": "Student t",
+        "cauchy": "Cauchy",
+    }
+    label = tr(NAMES[name][0], chinese[name])
+    parameters = BASE_PARAMETERS.get(name)
+    return f"{label} · {parameters}" if parameters else label
+
+
 def _shape(name):
     if name == "pareto":
         return st.slider(
@@ -52,6 +77,8 @@ def render():
         dist_view="body",
     )
     labels = {name: tr(*pair) for name, pair in NAMES.items()}
+    # Freeze translated labels for widget serialization outside the render context.
+    choice_labels = {name: _choice_label(name) for name in NAMES}
     header(
         "01",
         tr("Distributions & boxplots", "分布与箱型图"),
@@ -71,7 +98,7 @@ def render():
             name = st.selectbox(
                 tr("Distribution", "总体分布"),
                 list(NAMES),
-                format_func=labels.get,
+                format_func=choice_labels.get,
                 key="dist_name",
                 help={
                     "normal": tr("Reference: μ = 0, σ = 1", "基准：μ = 0，σ = 1"),
@@ -107,7 +134,7 @@ def render():
             )
         with tools_row:
             with st.popover(
-                tr("Display options", "显示选项"),
+                tr("Display", "显示选项"),
                 icon=":material/tune:",
                 key="display_distributions",
             ):
@@ -316,6 +343,13 @@ def render():
     )
     cdf.update_xaxes(range=[lo, hi])
     cdf.update_yaxes(range=[0, 1])
+    if align:
+        st.caption(
+            tr(
+                "Aligned axes: median = 0, IQR = 1. The selector shows base-distribution parameters.",
+                "坐标已对齐：中位数 = 0，IQR = 1；选择框显示的是原始分布参数。",
+            )
+        )
     a, b = st.columns(2)
     with a:
         chart(

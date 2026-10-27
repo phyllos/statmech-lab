@@ -34,7 +34,8 @@ def control_panel(lab, *, seed_key, seed_start, action_key, rearrange=False):
     """Keep actions above one persistent set of parameter widgets.
 
     Pages append their display/comparison popovers to the returned toolbar.
-    The narrow-screen toggle changes visibility only, never the data or seed.
+    The parameter toggle changes visibility only, never the data or seed.
+    CSS assigns stable action slots based on the panel's actual available width.
     """
     open_key = f"panel_open_{lab}"
     if open_key not in st.session_state:

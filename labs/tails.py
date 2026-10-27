@@ -113,9 +113,7 @@ def render():
                     )
                 )
         with tools_row:
-            with st.popover(
-                tr("Display options", "显示选项"), icon=":material/tune:", key="display_tails"
-            ):
+            with st.popover(tr("Display", "显示选项"), icon=":material/tune:", key="display_tails"):
                 excess = st.toggle(
                     tr("Show excess kurtosis", "显示超额峰度"),
                     key="tail_excess",
