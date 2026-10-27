@@ -57,6 +57,7 @@ def render():
         dist_n=300,
         dist_interval=(0.25, 0.75),
         dist_fences=True,
+        dist_view="body",
     )
     labels = {name: tr(*pair) for name, pair in NAMES.items()}
     header(
@@ -123,11 +124,12 @@ def render():
                     "body": tr("Body and boxplot", "主体与箱体"),
                     "central99": tr("Central 99% interval", "中央 99% 概率区间"),
                 }
-                view = st.selectbox(
+                view = st.segmented_control(
                     tr("Horizontal view", "横轴视窗"),
                     ["body", "central99"],
                     format_func=view_names.get,
                     key="dist_view",
+                    required=True,
                     help=tr(
                         "Changes only the visible range. Statistics use the full sample.",
                         "仅改变显示范围；统计量始终使用完整样本。",

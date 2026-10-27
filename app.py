@@ -29,10 +29,19 @@ restore_controls()
 lab_labels = {key: tr(*names) for key, names in LABS.items()}
 
 
+def select_lab():
+    selected = st.session_state.get(f"nav_{language()}")
+    if selected in LABS:
+        st.session_state.active_lab = selected
+    sync_navigation()
+
+
 def sync_navigation():
     remember_controls()
     st.session_state.language = language()
     st.query_params["lang"] = language()
+    active = st.session_state.get("active_lab", "distributions")
+    st.session_state.active_lab = active if active in LABS else "distributions"
     st.query_params["lab"] = st.session_state.active_lab
 
 
@@ -49,18 +58,23 @@ with st.sidebar:
     )
     st.segmented_control(
         "Language / 语言",
+        required=True,
         options=list(LANGUAGES),
         format_func=lambda value: "English" if value == "en" else "中文",
         key="language",
         on_change=sync_navigation,
         width="stretch",
     )
+    # One widget instance per language: Streamlit transmits radio values as their
+    # formatted labels, so a translated label must never outlive its language.
+    # The canonical lab id lives in the non-widget key "active_lab".
     st.radio(
         tr("Explore", "实验目录"),
         options=list(LABS),
+        index=list(LABS).index(st.session_state.active_lab),
         format_func=lab_labels.get,
-        key="active_lab",
-        on_change=sync_navigation,
+        key=f"nav_{language()}",
+        on_change=select_lab,
     )
     st.divider()
     st.markdown(tr("**Observe, then explain**", "**先观察，再解释**"))

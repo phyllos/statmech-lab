@@ -90,11 +90,11 @@ def sampling_walkthrough(result, *, n, repetitions, seed, model):
                 "回看本次实验：使用上方图表同一批观测、随机种子与均值。点击步骤，逐步查看生成过程。",
             )
         )
-        stage = st.radio(
+        stage = st.segmented_control(
             tr("Sampling steps", "抽样步骤"),
             list(stages),
             format_func=stages.get,
-            horizontal=True,
+            required=True,
             key="clt_demo_stage",
             label_visibility="collapsed",
         )

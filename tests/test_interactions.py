@@ -34,8 +34,12 @@ def array(value):
     return np.asarray(value)
 
 
+def nav(app):
+    return app.radio(key=f"nav_{app.session_state['language']}")
+
+
 def open_lab(app, lab):
-    app.radio(key="active_lab").set_value(lab).run()
+    nav(app).set_value(lab).run()
     assert not app.exception
 
 
@@ -106,7 +110,7 @@ def test_clt_reference_uses_its_own_standardization_and_shared_bins(app):
     app.button(key="action_keep_clt").click().run()
     saved = dict(app.session_state["_reference_clt"])
     app.slider(key="clt_n").set_value(80).run()
-    app.radio(key="clt_view").set_value("standardized").run()
+    app.button_group(key="clt_view").set_value("standardized").run()
     data = figure(app, "clt_means_chart")["data"]
     centers, widths = array(data[0]["x"]), array(data[0]["width"])
     edges = np.r_[centers - widths / 2, centers[-1] + widths[-1] / 2]
@@ -115,7 +119,7 @@ def test_clt_reference_uses_its_own_standardization_and_shared_bins(app):
     np.testing.assert_allclose(array(data[1]["y"]), counts / (500 * widths))
     assert dict(app.session_state["_reference_clt"]) == saved
     app.selectbox(key="clt_distribution").set_value("cauchy").run()
-    assert app.radio(key="clt_view").value == "means"
+    assert app.button_group(key="clt_view").value == "means"
     assert len(figure(app, "clt_means_chart")["data"]) == 2
     assert not app.exception
 
@@ -134,11 +138,11 @@ def test_walkthrough_replays_run_and_keeps_progress_in_both_languages(app):
         array(figure(app, "demo_observations")["data"][0]["y"]), expected["first_group"]
     )
     assert len(figure(app, "demo_observations")["data"]) == 1
-    app.radio(key="clt_demo_stage").set_value("mean").run()
+    app.button_group(key="clt_demo_stage").set_value("mean").run()
     np.testing.assert_allclose(
         array(figure(app, "demo_observations")["data"][1]["y"]), [expected["means"][0]] * 2
     )
-    app.radio(key="clt_demo_stage").set_value("repeat").run()
+    app.button_group(key="clt_demo_stage").set_value("repeat").run()
     app.select_slider(key="clt_demo_count").set_value(100).run()
     histogram = figure(app, "demo_histogram")["data"][0]
     assert array(histogram["y"]).sum() == 100
@@ -150,27 +154,27 @@ def test_walkthrough_replays_run_and_keeps_progress_in_both_languages(app):
         array(histogram["y"]), np.histogram(expected["means"][:100], bins=edges)[0]
     )
     assert figure(app, "clt_means_chart")["data"] == main_before
-    app.radio(key="clt_demo_stage").set_value("mean").run()
-    app.radio(key="clt_demo_stage").set_value("repeat").run()
+    app.button_group(key="clt_demo_stage").set_value("mean").run()
+    app.button_group(key="clt_demo_stage").set_value("repeat").run()
     assert app.select_slider(key="clt_demo_count").value == 100
     app.button_group(key="language").set_value(
         "en" if app.button_group(key="language").value == "zh" else "zh"
     ).run()
     open_lab(app, "glossary")
     open_lab(app, "clt")
-    assert app.radio(key="clt_demo_stage").value == "repeat"
+    assert app.button_group(key="clt_demo_stage").value == "repeat"
     assert app.select_slider(key="clt_demo_count").value == 100
     assert array(figure(app, "demo_histogram")["data"][0]["y"]).sum() == 100
     app.button(key="clt_resample").click().run()
-    assert app.radio(key="clt_demo_stage").value == "draw"
+    assert app.button_group(key="clt_demo_stage").value == "draw"
     assert app.session_state["clt_draw"] == 1
     app.selectbox(key="clt_distribution").set_value("cauchy").run()
-    app.radio(key="clt_demo_stage").set_value("repeat").run()
+    app.button_group(key="clt_demo_stage").set_value("repeat").run()
     app.select_slider(key="clt_demo_count").set_value(500).run()
     assert array(figure(app, "demo_histogram")["data"][0]["y"]).sum() == 500
     assert len(app.warning) >= 2
     app.button(key="action_restart_walkthrough").click().run()
-    assert app.radio(key="clt_demo_stage").value == "draw"
+    assert app.button_group(key="clt_demo_stage").value == "draw"
     assert app.session_state["clt_draw"] == 1
     assert not app.exception
 
@@ -205,7 +209,7 @@ def test_secondary_controls_are_hidden_without_losing_functionality(app):
     assert not options.proto.popover.open
     assert options.toggle(key="dist_align").value is False
     assert options.toggle(key="dist_fences").value is True
-    assert options.selectbox(key="dist_view").value == "body"
+    assert options.button_group(key="dist_view").value == "body"
     comparison = next(
         e for e in app.get("popover") if e.proto.id.endswith("-comparison_distributions")
     )
@@ -220,7 +224,7 @@ def test_secondary_controls_are_hidden_without_losing_functionality(app):
     assert figure(app, "tail_sf")["layout"]["xaxis"]["type"] == "linear"
     open_lab(app, "clt")
     options = next(e for e in app.get("popover") if e.proto.id.endswith("-display_clt"))
-    assert options.radio(key="clt_view").value == "means"
+    assert options.button_group(key="clt_view").value == "means"
     assert not app.exception
 
 
@@ -281,7 +285,7 @@ def test_readout_formats_preserve_counts_and_microstate_heading(app):
     open_lab(app, "clt")
     assert figure(app, "clt_running_chart")["layout"]["xaxis"]["hoverformat"] == ",d"
     assert figure(app, "clt_means_chart")["layout"]["yaxis"]["hoverformat"] == ".3g"
-    app.radio(key="clt_demo_stage").set_value("repeat").run()
+    app.button_group(key="clt_demo_stage").set_value("repeat").run()
     assert figure(app, "demo_histogram")["layout"]["yaxis"]["hoverformat"] == ",d"
     assert figure(app, "demo_observations")["layout"]["xaxis"]["hoverformat"] == ",d"
     open_lab(app, "entropy")

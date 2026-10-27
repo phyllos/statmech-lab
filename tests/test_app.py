@@ -18,8 +18,13 @@ def app(request):
     return instance
 
 
+def _nav(app):
+    """The navigation radio is keyed per language (see app.py)."""
+    return app.radio(key=f"nav_{app.session_state['language']}")
+
+
 def _open(app, lab):
-    app.radio(key="active_lab").set_value(lab).run()
+    _nav(app).set_value(lab).run()
     assert not app.exception
     return app
 
@@ -63,11 +68,11 @@ def test_nonfinite_kurtosis_and_normal_convention(app):
 
 def test_clt_invalid_variance_resets_standardized_view(app):
     _open(app, "clt")
-    app.radio(key="clt_view").set_value("standardized").run()
+    app.button_group(key="clt_view").set_value("standardized").run()
     app.selectbox(key="clt_distribution").set_value("cauchy").run()
     assert not app.exception
-    assert app.radio(key="clt_view").value == "means"
-    assert app.radio(key="clt_view").disabled
+    assert app.button_group(key="clt_view").value == "means"
+    assert app.button_group(key="clt_view").disabled
     app.selectbox(key="clt_distribution").set_value("pareto").run()
     app.slider(key="clt_alpha").set_value(1.5).run()
     assert (
@@ -75,7 +80,7 @@ def test_clt_invalid_variance_resets_standardized_view(app):
         or "law of large numbers applies" in app.warning[0].value
     )
     app.slider(key="clt_alpha").set_value(3.0).run()
-    assert not app.radio(key="clt_view").disabled
+    assert not app.button_group(key="clt_view").disabled
     assert not app.exception
 
 
@@ -125,7 +130,7 @@ def test_fresh_session_defaults_to_english():
     app = AppTest.from_file(str(APP), default_timeout=20).run()
     assert not app.exception
     assert app.button_group(key="language").value == "en"
-    assert app.radio(key="active_lab").options[0] == "01  Distributions & boxplots"
+    assert _nav(app).options[0] == "01  Distributions & boxplots"
     assert "Population PDF" in app.get("plotly_chart")[0].proto.spec
 
 
@@ -136,7 +141,7 @@ def test_language_and_reference_navigation_preserve_experiment(lab):
     if lab == "distributions":
         app.selectbox(key="dist_name").set_value("pareto").run()
         app.slider(key="dist_shape_pareto").set_value(1.5).run()
-        app.selectbox(key="dist_view").set_value("central99").run()
+        app.button_group(key="dist_view").set_value("central99").run()
         app.toggle(key="dist_align").set_value(True).run()
         app.button(key="dist_resample").click().run()
         expected = {
@@ -161,7 +166,7 @@ def test_language_and_reference_navigation_preserve_experiment(lab):
         app.selectbox(key="clt_distribution").set_value("pareto").run()
         app.slider(key="clt_alpha").set_value(4.5).run()
         app.slider(key="clt_n").set_value(51).run()
-        app.radio(key="clt_view").set_value("standardized").run()
+        app.button_group(key="clt_view").set_value("standardized").run()
         app.button(key="clt_resample").click().run()
         expected = {
             "clt_distribution": "pareto",
@@ -219,7 +224,7 @@ def test_chinese_reference_deep_link():
     app.run()
     assert not app.exception
     assert app.button_group(key="language").value == "zh"
-    assert app.radio(key="active_lab").value == "glossary"
+    assert _nav(app).value == "glossary"
     assert any("参考</div>" in e.value for e in app.markdown)
 
 

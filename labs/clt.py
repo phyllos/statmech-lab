@@ -30,6 +30,7 @@ def render():
         clt_n=30,
         clt_repetitions=2000,
         clt_alpha=3.0,
+        clt_view="means",
     )
     header(
         "03",
@@ -112,12 +113,12 @@ def render():
                 "means": tr("Sample means", "样本均值"),
                 "standardized": tr("Standardized means", "标准化均值"),
             }
-            mode = st.radio(
+            mode = st.segmented_control(
                 tr("Display scale", "观察尺度"),
                 list(view_labels),
                 format_func=view_labels.get,
-                horizontal=True,
                 key="clt_view",
+                required=True,
                 disabled=not finite,
             )
             st.caption(tr(f"Random seed: {seed}", f"随机种子：{seed}"))

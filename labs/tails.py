@@ -137,6 +137,8 @@ def render():
     k_label = (
         tr("Excess kurtosis", "超额峰度") if excess else tr("Pearson kurtosis", "Pearson 峰度")
     )
+    # Mid-sentence English form; "Pearson" is a proper noun and keeps its capital.
+    k_phrase = "excess kurtosis" if excess else "Pearson kurtosis"
     theoretical_k = moments[k_name]
     sample_k = float(stats.kurtosis(sample, fisher=excess, bias=False))
     metric_row(
@@ -157,7 +159,7 @@ def render():
                 tr("Standardized third central moment", "标准化三阶中心矩"),
             ),
             (
-                tr(f"Population {k_label.lower()}", f"总体{k_label}"),
+                tr(f"Population {k_phrase}", f"总体{k_label}"),
                 _fmt(theoretical_k),
                 tr(
                     "Distinguish sample estimates from population values",
@@ -275,7 +277,7 @@ def render():
             y=values,
             mode="lines",
             line=dict(color=COLORS["sample"], width=2.5),
-            name=tr(f"Sample {k_label.lower()}", f"前 n 个样本的{k_label}"),
+            name=tr(f"Sample {k_phrase}", f"前 n 个样本的{k_label}"),
         )
     )
     if np.isfinite(theoretical_k):
@@ -297,7 +299,7 @@ def render():
     chart(convergence, key="tail_sample_kurtosis")
     left, right = st.columns([1, 2])
     with left:
-        st.metric(tr(f"This sample: {k_label.lower()}", f"这批样本的{k_label}"), f"{sample_k:.3g}")
+        st.metric(tr(f"This sample: {k_phrase}", f"这批样本的{k_label}"), f"{sample_k:.3g}")
     with right:
         if np.isfinite(theoretical_k):
             st.write(
