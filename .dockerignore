@@ -1,0 +1,18 @@
+# Only application sources and dependency metadata enter the build context.
+**
+!Dockerfile
+!pyproject.toml
+!uv.lock
+!app.py
+!physics.py
+!shared.py
+!state.py
+!i18n.py
+!glossary.py
+!interactions.py
+!labs/
+!labs/*.py
+!styles/
+!styles/app.css
+!.streamlit/
+!.streamlit/config.toml

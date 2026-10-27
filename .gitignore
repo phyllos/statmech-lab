@@ -1,0 +1,40 @@
+# Python environments (recreate with uv sync --locked)
+.venv/
+venv/
+
+# Python bytecode, tooling caches and notebook checkpoints
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.hypothesis/
+.ipynb_checkpoints/
+
+# Test coverage and package build output
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+/build/
+/dist/
+*.egg-info/
+
+# Reproducible figures and local backups
+/figs/
+/backups/
+/stat_mech*.zip
+/stat_mech*.tar.gz
+
+# Local configuration and credentials; keep the shareable example
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+
+# OS metadata and temporary editor files
+.DS_Store
+._*
+*.swp
+*.swo
+*~

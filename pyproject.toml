@@ -1,0 +1,36 @@
+[project]
+name = "stat-mech-lab"
+version = "0.1.0"
+description = "Interactive probability and statistical mechanics experiments for PHYS 515"
+requires-python = ">=3.12,<3.15"
+dependencies = [
+    "numpy>=2.2,<3",
+    "scipy>=1.15,<2",
+    "streamlit>=1.66.1,<2",
+    "plotly>=6,<7",
+    "matplotlib>=3.10,<4",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8,<10",
+    "ruff>=0.17.3",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+# Select the headless backend before importing pyplot.
+"export_figures.py" = ["E402"]
