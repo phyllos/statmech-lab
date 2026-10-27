@@ -62,16 +62,14 @@ def render():
     )
     with control_panel(
         "distributions",
-        lambda: (
-            f"{labels[st.session_state.get('dist_name', 'normal')]} · n = {st.session_state['dist_n']:,}"
-        ),
+        action_key="dist_resample",
         seed_key="dist_seed",
         seed_start=515,
-    ):
-        a, c, d = st.columns([1.5, 1.1, 0.9], vertical_alignment="bottom")
+    ) as tools_row:
+        a, c = st.columns([1.5, 1.1], vertical_alignment="bottom")
         with a:
             name = st.selectbox(
-                tr("Population distribution", "选择总体分布"),
+                tr("Distribution", "总体分布"),
                 list(NAMES),
                 format_func=labels.get,
                 key="dist_name",
@@ -88,18 +86,13 @@ def render():
             n = st.select_slider(
                 tr("Sample size n", "样本量 n"), [50, 100, 300, 1000, 3000], key="dist_n"
             )
-        with d:
-            if st.button(tr("↻ Resample", "↻ 重新抽样"), key="dist_resample", width="stretch"):
-                st.session_state["dist_seed"] = st.session_state.get("dist_seed", 515) + 1
         if name in {"pareto", "lognormal", "student_t"}:
-            shape_column, interval_column, tools_column = st.columns(
-                [1.1, 1.5, 1.2], vertical_alignment="bottom"
-            )
+            shape_column, interval_column = st.columns([1.1, 1.5], vertical_alignment="bottom")
             with shape_column:
                 shape = _shape(name)
         else:
             shape = 3.0
-            interval_column, tools_column = st.columns([1.8, 1.2], vertical_alignment="bottom")
+            interval_column = st.container()
         with interval_column:
             probabilities = st.slider(
                 tr("Probability interval", "概率区间"),
@@ -112,8 +105,6 @@ def render():
                     "两端是累计概率。调整端点，PDF 面积、CDF 端点和样本图的区间阴影会同步变化。",
                 ),
             )
-        with tools_column:
-            tools_row = st.container(horizontal=True)
         with tools_row:
             with st.popover(
                 tr("Display options", "显示选项"),

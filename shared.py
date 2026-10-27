@@ -30,36 +30,36 @@ def _advance_draw(key, initial):
 
 
 @contextmanager
-def control_panel(lab, summary, *, seed_key, seed_start, rearrange=False):
-    """One set of widgets, with a compact sticky header on narrow/short screens.
+def control_panel(lab, *, seed_key, seed_start, action_key, rearrange=False):
+    """Keep actions above one persistent set of parameter widgets.
 
-    CSS controls visibility only; hiding a body must not delete widgets or reset
-    settings. The compact action uses the same random counter as the full panel.
+    Pages append their display/comparison popovers to the returned toolbar.
+    The narrow-screen toggle changes visibility only, never the data or seed.
     """
+    open_key = f"panel_open_{lab}"
+    if open_key not in st.session_state:
+        st.session_state[open_key] = True
     with st.container(border=True, key=f"controls_{lab}"):
-        with st.container(key=f"compact_controls_{lab}"):
-            summary_slot = st.empty()
-            with st.container(horizontal=True, vertical_alignment="center"):
-                opened = st.toggle(
-                    tr("Parameters", "参数"),
-                    key=f"panel_open_{lab}",
-                    persist_state="session",
-                )
-                st.button(
-                    tr("Rearrange", "重新排列") if rearrange else tr("Resample", "重新抽样"),
-                    icon=":material/refresh:",
-                    key=f"action_compact_draw_{lab}",
-                    on_click=_advance_draw,
-                    args=(seed_key, seed_start),
-                )
+        tools = st.container(
+            horizontal=True,
+            wrap=True,
+            vertical_alignment="center",
+            gap="small",
+            key=f"control_toolbar_{lab}",
+        )
+        with tools:
+            with st.container(width="content", key=f"panel_toggle_{lab}"):
+                opened = st.toggle(tr("Parameters", "参数"), key=open_key, persist_state="session")
+            st.button(
+                tr("Rearrange", "重新排列") if rearrange else tr("Resample", "重新抽样"),
+                icon=":material/refresh:",
+                key=action_key,
+                on_click=_advance_draw,
+                args=(seed_key, seed_start),
+            )
         state = "open" if opened else "closed"
         with st.container(key=f"control_body_{lab}_{state}"):
-            yield
-        # The controls may initialize their defaults during the body render.
-        summary_slot.markdown(
-            f'<div class="control-summary">{escape(summary())}</div>',
-            unsafe_allow_html=True,
-        )
+            yield tools
 
 
 def header(index, title, subtitle):

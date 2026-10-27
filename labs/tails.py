@@ -75,14 +75,14 @@ def render():
     )
     with control_panel(
         "tails",
-        lambda: f"{labels[st.session_state.get('tail_name', 'pareto')]} · n = 4,000",
+        action_key="tail_resample",
         seed_key="tail_seed",
         seed_start=1515,
-    ):
-        a, b, d = st.columns([1.4, 1.2, 0.8], vertical_alignment="bottom")
+    ) as tools_row:
+        a, b = st.columns([1.4, 1.2], vertical_alignment="bottom")
         with a:
             name = st.selectbox(
-                tr("Distribution to explore", "研究分布"),
+                tr("Distribution", "研究分布"),
                 list(NAMES),
                 format_func=labels.get,
                 key="tail_name",
@@ -112,28 +112,21 @@ def render():
                         "使用标准参数；下图按中位数和 IQR 对齐。",
                     )
                 )
-        with d:
-            if st.button(
-                tr("↻ Resample", "↻ 重新抽样"),
-                key="tail_resample",
-                width="stretch",
-                help=tr("Draw 4,000 new observations", "重新抽取 4,000 个观测值"),
+        with tools_row:
+            with st.popover(
+                tr("Display options", "显示选项"), icon=":material/tune:", key="display_tails"
             ):
-                st.session_state["tail_seed"] = st.session_state.get("tail_seed", 1515) + 1
-        with st.popover(
-            tr("Display options", "显示选项"), icon=":material/tune:", key="display_tails"
-        ):
-            excess = st.toggle(
-                tr("Show excess kurtosis", "显示超额峰度"),
-                key="tail_excess",
-                help=tr(
-                    "Excess kurtosis = Pearson kurtosis − 3. The normal reference changes from 3 to 0.",
-                    "超额峰度 = Pearson 峰度 − 3。正态基准从 3 变为 0。",
-                ),
-            )
-            logarithmic_x = st.toggle(
-                tr("Logarithmic tail x-axis", "尾部横轴使用对数"), key="tail_logx"
-            )
+                excess = st.toggle(
+                    tr("Show excess kurtosis", "显示超额峰度"),
+                    key="tail_excess",
+                    help=tr(
+                        "Excess kurtosis = Pearson kurtosis − 3. The normal reference changes from 3 to 0.",
+                        "超额峰度 = Pearson 峰度 − 3。正态基准从 3 变为 0。",
+                    ),
+                )
+                logarithmic_x = st.toggle(
+                    tr("Logarithmic tail x-axis", "尾部横轴使用对数"), key="tail_logx"
+                )
     rv = make_distribution(name, shape)
     moments = population_moments(rv)
     seed = st.session_state.get("tail_seed", 1515)

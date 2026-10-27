@@ -30,43 +30,51 @@ def plot_values(app):
         ("entropy", "ent_draw", 0, "ent_shuffle"),
     ],
 )
-def test_panel_visibility_preserves_data_and_actions_share_one_counter(
-    lab, seed_key, initial, full_action
-):
+def test_panel_starts_open_and_visibility_preserves_data(lab, seed_key, initial, full_action):
     app = AppTest.from_file(str(APP), default_timeout=20)
     app.query_params = {"lab": lab, "lang": "en"}
     app.run()
     before = plot_values(app)
-    assert not app.toggle(key=f"panel_open_{lab}").value
-    app.toggle(key=f"panel_open_{lab}").set_value(True).run()
-    assert plot_values(app) == before
+    assert app.toggle(key=f"panel_open_{lab}").value
     app.toggle(key=f"panel_open_{lab}").set_value(False).run()
     assert plot_values(app) == before
-    app.button(key=f"action_compact_draw_{lab}").click().run()
+    app.button(key=full_action).click().run()
     assert app.session_state[seed_key] == initial + 1
     assert plot_values(app) != before
+    sampled = plot_values(app)
+    app.toggle(key=f"panel_open_{lab}").set_value(True).run()
+    assert plot_values(app) == sampled
     app.button(key=full_action).click().run()
     assert app.session_state[seed_key] == initial + 2
     assert not app.exception
 
 
-@pytest.mark.parametrize("lab", ["distributions", "tails", "clt", "entropy"])
-def test_compact_panel_keeps_navigation_and_open_state_across_languages(lab):
+@pytest.mark.parametrize(
+    "lab,action",
+    [
+        ("distributions", "dist_resample"),
+        ("tails", "tail_resample"),
+        ("clt", "clt_resample"),
+        ("entropy", "ent_shuffle"),
+    ],
+)
+@pytest.mark.parametrize("opened", [True, False])
+def test_panel_keeps_navigation_and_visibility_across_languages(lab, action, opened):
     app = AppTest.from_file(str(APP), default_timeout=20)
     app.query_params = {"lab": lab, "lang": "en"}
     app.run()
-    app.toggle(key=f"panel_open_{lab}").set_value(True).run()
+    app.toggle(key=f"panel_open_{lab}").set_value(opened).run()
     for lang in ("zh", "en", "zh"):
         app.button_group(key="language").set_value(lang).run()
-        app.button(key=f"action_compact_draw_{lab}").click().run()
+        app.button(key=action).click().run()
         assert app.session_state["active_lab"] == lab
         assert app.query_params["lab"] == lab
         assert app.query_params["lang"] == lang
-        assert app.toggle(key=f"panel_open_{lab}").value
+        assert app.toggle(key=f"panel_open_{lab}").value == opened
         assert app.button_group(key="language").proto.required
     app.radio(key="nav_zh").set_value("glossary").run()
     app.radio(key="nav_zh").set_value(lab).run()
-    assert app.toggle(key=f"panel_open_{lab}").value
+    assert app.toggle(key=f"panel_open_{lab}").value == opened
     assert not app.exception
 
 

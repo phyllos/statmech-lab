@@ -64,35 +64,73 @@ def main():
             ).to_have_attribute("aria-pressed", "true")
             page.keyboard.press("Escape")
 
-        # Check every panel at phone, narrow-window and short-desktop sizes.
+        # Check both languages at phone, narrow-window and short-desktop sizes.
         for width, height in [(390, 844), (820, 900), (1280, 650)]:
             page.set_viewport_size({"width": width, "height": height})
-            for lab, (english, _, _) in labs.items():
-                page.goto(f"{args.url}/?lang=en&lab={lab}")
-                expect(page.get_by_role("heading", name=english, exact=True)).to_be_visible()
-                compact = page.locator(f".st-key-compact_controls_{lab}")
-                expect(compact).to_be_visible()
-                expect(page.locator(f".st-key-control_body_{lab}_closed")).to_be_hidden()
-                compact.get_by_role("checkbox", name="Parameters", exact=True).check()
-                expect(page.locator(f".st-key-control_body_{lab}_open")).to_be_visible()
-                body = page.locator(f".st-key-control_body_{lab}_open").locator("..").bounding_box()
-                assert body and body["height"] <= height * 0.42 + 24
-                compact.get_by_role("checkbox", name="Parameters", exact=True).uncheck()
-                page.get_by_test_id("stMain").evaluate("el => { el.scrollTop = 650; }")
-                expect(compact).to_be_visible()
-                box = compact.bounding_box()
-                assert box and 45 <= box["y"] < 130, box
-                compact.get_by_role(
-                    "button", name="Rearrange" if lab == "entropy" else "Resample", exact=True
-                ).click()
-                expect(page).to_have_url(re.compile(rf"[?&]lab={lab}(?:&|$)"))
-                assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
-                page.screenshot(path=str(args.output / f"{lab}-{width}x{height}.png"))
+            for lab, (english, chinese, action) in labs.items():
+                for lang, heading in [("en", english), ("zh", chinese)]:
+                    page.goto(f"{args.url}/?lang={lang}&lab={lab}")
+                    expect(page.get_by_role("heading", name=heading, exact=True)).to_be_visible()
+                    toolbar = page.locator(f".st-key-control_toolbar_{lab}")
+                    toggle = toolbar.get_by_role("checkbox")
+                    expect(toggle).to_be_checked()
+                    expect(page.locator(f".st-key-control_body_{lab}_open")).to_be_visible()
+                    body = (
+                        page.locator(f".st-key-control_body_{lab}_open")
+                        .locator("..")
+                        .bounding_box()
+                    )
+                    assert body and body["height"] <= height * 0.36 + 24
+
+                    # Top-level actions must occupy separate boxes after wrapping.
+                    items = [
+                        toolbar.locator(f".st-key-panel_toggle_{lab}"),
+                        toolbar.locator(f".st-key-{action}"),
+                    ]
+                    if lab != "entropy":
+                        items.append(toolbar.locator(f".st-key-display_{lab}"))
+                    if lab in {"distributions", "clt"}:
+                        items.append(toolbar.locator(f".st-key-comparison_{lab}"))
+                    boxes = []
+                    for item in items:
+                        expect(item).to_be_visible()
+                        box = item.bounding_box()
+                        assert box
+                        for previous in boxes:
+                            overlap_x = min(
+                                box["x"] + box["width"], previous["x"] + previous["width"]
+                            ) - max(box["x"], previous["x"])
+                            overlap_y = min(
+                                box["y"] + box["height"], previous["y"] + previous["height"]
+                            ) - max(box["y"], previous["y"])
+                            assert overlap_x <= 0 or overlap_y <= 0, (box, previous)
+                        boxes.append(box)
+                    page.screenshot(
+                        path=str(args.output / f"{lab}-{lang}-{width}x{height}-open.png")
+                    )
+                    toggle.uncheck()
+                    expect(page.locator(f".st-key-control_body_{lab}_closed")).to_be_hidden()
+                    if lab != "entropy":
+                        toolbar.locator(f".st-key-display_{lab}").get_by_role("button").click()
+                        page.keyboard.press("Escape")
+                    page.get_by_test_id("stMain").evaluate("el => { el.scrollTop = 650; }")
+                    expect(toolbar).to_be_visible()
+                    box = toolbar.bounding_box()
+                    assert box and 45 <= box["y"] < 130, box
+                    toolbar.locator(f".st-key-{action}").get_by_role("button").click()
+                    expect(page).to_have_url(re.compile(rf"[?&]lab={lab}(?:&|$)"))
+                    assert page.evaluate(
+                        "document.documentElement.scrollWidth <= window.innerWidth"
+                    )
+                    page.screenshot(
+                        path=str(args.output / f"{lab}-{lang}-{width}x{height}-closed.png")
+                    )
 
         page.set_viewport_size({"width": 1440, "height": 1000})
         page.goto(f"{args.url}/?lang=en&lab=distributions")
-        expect(page.locator(".st-key-compact_controls_distributions")).to_be_hidden()
-        expect(page.locator(".st-key-control_body_distributions_closed")).to_be_visible()
+        expect(page.locator(".st-key-control_toolbar_distributions")).to_be_visible()
+        expect(page.locator(".st-key-panel_toggle_distributions")).to_be_hidden()
+        expect(page.locator(".st-key-control_body_distributions_open")).to_be_visible()
         page.screenshot(path=str(args.output / "desktop.png"))
         browser.close()
     print(f"Browser regression passed; screenshots: {args.output.resolve()}")

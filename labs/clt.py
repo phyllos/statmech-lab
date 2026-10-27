@@ -54,12 +54,10 @@ def render():
 
     with control_panel(
         "clt",
-        lambda: (
-            f"{distribution_labels[st.session_state.get('clt_distribution', 'exponential')]} · n = {st.session_state['clt_n']} · R = {st.session_state['clt_repetitions']:,}"
-        ),
+        action_key="clt_resample",
         seed_key="clt_draw",
         seed_start=0,
-    ):
+    ) as tools_row:
         c1, c2, c3 = st.columns([1.15, 1.35, 1.15], vertical_alignment="bottom")
         with c1:
             name = st.selectbox(
@@ -92,10 +90,6 @@ def render():
                 [500, 1000, 2000, 3000, 5000],
                 key="clt_repetitions",
             )
-        tools_row = st.container(horizontal=True)
-        with tools_row:
-            if st.button(tr("Resample", "重新抽样"), key="clt_resample"):
-                st.session_state["clt_draw"] = st.session_state.get("clt_draw", 0) + 1
 
     seed = 51503 + st.session_state.get("clt_draw", 0)
     result = _experiment(name, shape, n, repetitions, seed)

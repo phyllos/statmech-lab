@@ -21,10 +21,12 @@ For another local port, pass `--url http://127.0.0.1:8517`. This script changes 
 
 检查覆盖四页的语言往返、再次点击当前语言、切换语言后的重新抽样、弹窗显示尺度保持，以及 390×844、820×900、1280×650 和 1440×1000 的控制面板显示规则。截图需要人工检查图例、弹窗位置与文本重叠。
 
-On narrow or short screens, the toolbar stays visible and starts with its parameters collapsed. Expanding it shows the original widgets in a bounded scrolling area; collapsing does not reset settings or draw new observations. Wide, tall screens show the full parameter panel. Window resizing only changes CSS visibility and retains the same widget instances.
+On narrow or short screens, the toolbar stays visible and starts with its parameters expanded. The toggle shows or hides the original widgets in a bounded scrolling area; collapsing does not reset settings or draw new observations. Wide, tall screens show the full parameter panel. Window resizing only changes CSS visibility and retains the same widget instances.
 
-窄屏或短窗口默认展示紧凑吸顶栏，完整参数按需展开；展开区域限制高度并可内部滚动。收起不会清空参数或重新抽样。宽且高的桌面窗口保持完整面板。窗口缩放只改变显示规则，不创建另一套参数。
+窄屏或短窗口默认展示紧凑吸顶栏，完整参数默认展开，仍可手动收起；展开区域限制高度并可内部滚动。收起不会清空参数或重新抽样。宽且高的桌面窗口保持完整面板。窗口缩放只改变显示规则，不创建另一套参数。
 
 The script is an executable regression specification. Its presence does not mean it has been run successfully: browser access must be available, and any failure needs investigation before claiming visual validation.
 
 脚本是可执行的回归检查方案；文件存在不代表已执行通过。需在允许浏览器访问的环境中运行，并检查失败结果后才能确认视觉验证完成。
+
+Check English and Chinese at 390px, 820px, and a short desktop window: the Parameters switch, resampling button, display options, and comparison popover must wrap without overlap. Distribution labels and selects should share a row on narrow windows; popovers remain accessible while parameters are collapsed.

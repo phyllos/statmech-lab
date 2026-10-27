@@ -40,14 +40,12 @@ def render():
 
     with control_panel(
         "entropy",
-        lambda: (
-            f"N = {st.session_state['ent_n']} · q = {st.session_state.get('ent_q', st.session_state['ent_n'] // 4)}"
-        ),
+        action_key="ent_shuffle",
         seed_key="ent_draw",
         seed_start=0,
         rearrange=True,
     ):
-        c1, c2, c3 = st.columns([1.2, 1.4, 1], vertical_alignment="bottom")
+        c1, c2 = st.columns([1.2, 1.4], vertical_alignment="bottom")
         with c1:
             n = st.slider(tr("Number of units N", "单元数 N"), 8, 200, key="ent_n")
         if "ent_q" not in st.session_state:
@@ -55,14 +53,6 @@ def render():
         st.session_state["ent_q"] = min(n, int(st.session_state["ent_q"]))
         with c2:
             q = st.slider(tr("Excited units q", "激发态单元数 q"), 0, n, key="ent_q")
-        with c3:
-            if st.button(
-                tr("Rearrange", "重新排列"),
-                key="ent_shuffle",
-                width="stretch",
-                help=tr("A new arrangement at the same E and N", "保留 E、N，换一种微观排列"),
-            ):
-                st.session_state["ent_draw"] = st.session_state.get("ent_draw", 0) + 1
 
     data = two_level(n, q)
     seed = 51504 + st.session_state.get("ent_draw", 0)

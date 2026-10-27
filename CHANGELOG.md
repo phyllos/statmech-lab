@@ -2,6 +2,8 @@
 
 ## Unreleased / 未发布
 
+- Start parameters expanded and consolidate resampling, display options and comparison in one wrapping toolbar. Remove the overlapping summary and use inline distribution selectors on narrow screens.
+
 - Keep the active experiment and display scale when switching languages; require a selected language and preserve Pearson's proper name.
 - Add a compact sticky control toolbar on narrow or short screens, with persistent parameter visibility and shared resampling state. Reduce parameter-panel and header spacing.
 - Move fixed distribution reference parameters into help, improve secondary-text contrast, and standardize the Chinese term for population inversion.

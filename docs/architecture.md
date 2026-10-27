@@ -77,8 +77,8 @@ Ruff 作为开发依赖锁定。Python 统一采用四空格缩进、100 字符�
 
 ## Responsive controls / 响应式控制面板
 
-`shared.control_panel` owns a single widget tree. At widths below 1100 CSS pixels or heights below 760 CSS pixels, a compact sticky toolbar replaces the always-visible full panel. A session-persistent toggle reveals the original body in a bounded scrolling region. Desktop rendering ignores the compact visibility choice; resizing never creates duplicate parameter widgets. Both resampling buttons increment the same experiment counter.
+`shared.control_panel` owns a single widget tree. At widths below 1100 CSS pixels or heights below 760 CSS pixels, the shared sticky toolbar also shows a parameter toggle. Parameters start expanded; the session-persistent toggle controls the original body in a bounded scrolling region. Display and comparison popovers remain in the toolbar, outside that scrolling body. Desktop rendering ignores the compact visibility choice; resizing never creates duplicate parameter widgets. One resampling button serves all viewport sizes. No duplicate summary competes with the action row; whole controls wrap with explicit gaps.
 
-`shared.control_panel` 保留同一组控件；窄屏或短窗口显示紧凑吸顶栏，完整参数按需展开。展开状态由独立控件保存，桌面始终显示完整参数。两个抽样入口共享计数器。导航控件按语言使用不同 key，实际页面 ID 保存在独立状态中，写入 URL 前校验；会翻译选项文字的显示尺度与抽样步骤使用必选分段控件。
+`shared.control_panel` 保留同一组控件；窄屏或短窗口在共用吸顶工具栏中显示参数开关，默认展开。展开状态由独立控件保存，桌面始终显示完整参数。抽样、显示选项与对照位于同一可换行工具栏；所有尺寸使用同一个抽样入口。分布标签与下拉框在窄屏同排，滑条仍保留独立读数空间。导航控件按语言使用不同 key，实际页面 ID 保存在独立状态中，写入 URL 前校验；会翻译选项文字的显示尺度与抽样步骤使用必选分段控件。
 
 Standalone HTML generation captures a figure and language configuration when rendering, then builds the file on download without accessing session state in the worker thread. See [browser checks](browser-checks.md) for frontend and responsive regression steps.
