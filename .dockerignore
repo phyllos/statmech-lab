@@ -11,6 +11,7 @@
 !glossary.py
 !interactions.py
 !distribution_ui.py
+!plot_theme.py
 !labs/
 !labs/*.py
 !styles/

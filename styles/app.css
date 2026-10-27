@@ -101,26 +101,6 @@ p {
   gap: .2rem;
 }
 
-.figure-heading {
-  min-height: 2.8rem;
-  padding: .2rem .3rem 0;
-}
-
-.figure-title {
-  font-size: .94rem;
-  font-weight: 700;
-  line-height: 1.5;
-  color: #182b3a;
-  overflow-wrap: anywhere;
-}
-
-.figure-subtitle {
-  color: #526b7b;
-  font-size: .74rem;
-  line-height: 1.5;
-  margin-top: .2rem;
-}
-
 [data-testid="stPlotlyChart"] .modebar {
   right: 4px !important;
   top: 2px !important;

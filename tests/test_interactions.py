@@ -289,11 +289,8 @@ def test_readout_formats_preserve_counts_and_microstate_heading(app):
     assert figure(app, "demo_histogram")["layout"]["yaxis"]["hoverformat"] == ",d"
     assert figure(app, "demo_observations")["layout"]["xaxis"]["hoverformat"] == ",d"
     open_lab(app, "entropy")
-    assert any(
-        "figure-title" in m.value
-        and ("01 / One possible microstate" in m.value or "01 / 一个可能的微观态" in m.value)
-        for m in app.markdown
-    )
+    title = figure(app, "ent_state_chart")["layout"]["title"]["text"]
+    assert title in ("01 / One possible microstate", "01 / 一个可能的微观态")
     assert not any("#### ①" in m.value for m in app.markdown)
     # Unit IDs remain exact; formatting does not affect the microstate.
     state = figure(app, "ent_state_chart")

@@ -337,9 +337,6 @@ def render():
         )
     )
 
-    st.markdown(
-        tr("#### One axis, three ways to look at the data", "#### 同一条数轴，三种观察方式")
-    )
     box = go.Figure()
     jitter = np.random.default_rng(19).uniform(-0.10, 0.10, n)
     outliers = (sample < summary["lower_fence"]) | (sample > summary["upper_fence"])
@@ -490,7 +487,7 @@ def render():
         margin=dict(l=95),
     )
     box.update_xaxes(range=[lo, hi])
-    chart(box, key="dist_box")
+    chart(box, key="dist_box", title=tr("One axis, three views", "同一条数轴，三种观察方式"))
     st.caption(
         tr(
             f"{summary['outlier_count']} points lie beyond the fences; whiskers end at actual observations.",

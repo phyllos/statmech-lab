@@ -184,3 +184,47 @@ def test_histogram_density_rejects_invalid_input(sample, edges):
 
     with pytest.raises(ValueError):
         histogram_density(sample, edges)
+
+
+@pytest.mark.parametrize("align", [False, True])
+@pytest.mark.parametrize("nu", [0.8, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0])
+def test_student_t_moments_distinguish_undefined_and_divergent(nu, align):
+    moments = population_moments(make_distribution("student_t", nu, align=align))
+    if nu <= 1:
+        assert all(np.isnan(v) for v in moments.values())
+    else:
+        assert moments["mean"] == pytest.approx(0, abs=1e-12)
+        if nu <= 2:
+            assert moments["variance"] == np.inf
+            assert np.isnan(moments["kurtosis"])
+        elif nu <= 4:
+            assert moments["kurtosis"] == np.inf
+        if nu <= 3:
+            assert np.isnan(moments["skewness"])
+        else:
+            assert moments["skewness"] == 0
+
+
+@pytest.mark.parametrize("alpha", [0.8, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0])
+def test_pareto_divergence_requires_defined_lower_moments(alpha):
+    moments = population_moments(make_distribution("pareto", alpha))
+    if alpha <= 1:
+        assert moments["mean"] == np.inf
+        assert np.isnan(moments["variance"])
+    elif alpha <= 2:
+        assert moments["variance"] == np.inf
+    if alpha <= 2:
+        assert np.isnan(moments["skewness"])
+        assert np.isnan(moments["kurtosis"])
+    else:
+        assert moments["kurtosis"] == np.inf
+        if alpha <= 3:
+            assert moments["skewness"] == np.inf
+
+
+@pytest.mark.parametrize("bounds", [(2, 1), (1, 1), (0, np.inf), (np.nan, 1), (0,), (0, 1, 2)])
+def test_histogram_rejects_invalid_explicit_bounds(bounds):
+    from physics import sample_histogram
+
+    with pytest.raises(ValueError, match="Bounds"):
+        sample_histogram([0, 1, 2], bounds=bounds)

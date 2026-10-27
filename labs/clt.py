@@ -358,7 +358,7 @@ def render():
             xaxis=dict(title=tr("Cumulative observations n", "累计观测数 n"), type="log"),
             yaxis_title=tr("Running mean x̄ₙ", "累积平均 x̄ₙ"),
         )
-        chart(fig, key="clt_running_chart")
+        chart(fig, key="clt_running_chart", title=tr("Running sample mean", "累积样本均值"))
         st.caption(
             tr(
                 "A separate, reproducible sequence of 5,000 independent observations. One path builds intuition, but does not prove convergence; it need not approach the mean monotonically.",

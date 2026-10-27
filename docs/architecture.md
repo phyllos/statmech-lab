@@ -11,6 +11,7 @@ The app keeps calculations independent from Streamlit. Pages compose those calcu
 | `distribution_ui.py` | Shared bilingual distribution names, base parameters and descriptions / 统一分布名称、原始参数与说明 |
 | `i18n.py` | Language choice and bilingual display text / 语言选择与双语文本 |
 | `shared.py` | Chart configuration, metric readouts, headings and HTML export / 图形配置、指标读数、标题及 HTML 导出 |
+| `plot_theme.py` | Semantic colors shared by interactive and static plots / 交互与静态图共用语义配色 |
 | `styles/app.css` | Responsive layout, spacing, colors and control-bar positioning / 响应式布局、间距、颜色与参数栏定位 |
 | `interactions.py` | Saved comparisons and the sampling walkthrough / 保留对照及抽样演示 |
 | `labs/` | Experiment-specific controls and plot composition / 各实验的控件与图形组合 |
@@ -88,6 +89,14 @@ Standalone HTML generation captures a figure and language configuration when ren
 
 
 ## Visual semantics / 视觉语义
+
+Chart titles and subtitles are native Plotly text with reserved toolbar space and bilingual line wrapping. SVG and HTML exports retain the same headings; Matplotlib exports share `plot_theme.COLORS`.
+
+图题与简短说明使用 Plotly 原生文字，预留工具栏空间并按中英文换行；SVG 与 HTML 导出保留相同图题，Matplotlib 出图共享 `plot_theme.COLORS`。
+
+Population moments use `nan` for undefined quantities and `inf` for divergence. Variance requires a finite mean; standardized moments require finite variance. Explicit histogram bounds must be finite and strictly increasing; only automatic bounds receive the constant-sample fallback.
+
+总体矩用 `nan` 表示未定义、`inf` 表示发散；方差需有有限均值，标准化偏度与峰度需有有限方差。显式直方图范围必须有限且严格递增；常量样本的兜底仅用于自动范围。
 
 In the distributions experiment, use teal for population theory and the selected probability interval (area, CDF endpoints and sample-plot band), orange for observations, purple for observations beyond sample IQR fences, and muted dotted lines for those fences. CDF endpoints have a white outline so they remain distinct from the theoretical curve. Interval selection and sample fences are independent; the fence switch controls guide lines and labels only. A point beyond the fences is not necessarily invalid data.
 

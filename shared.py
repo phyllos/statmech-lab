@@ -3,20 +3,13 @@
 from contextlib import contextmanager
 from html import escape
 from pathlib import Path
+from unicodedata import east_asian_width
 
 import plotly.graph_objects as go
 import streamlit as st
 
 from i18n import language, tr
-
-COLORS = {
-    "theory": "#087E8B",
-    "sample": "#E89B3F",
-    "accent": "#7868B0",
-    "beyond_fences": "#7868B0",  # Sample classification, never interval selection.
-    "muted": "#718493",
-    "ink": "#182B3A",
-}
+from plot_theme import COLORS
 
 # Resolve relative to this module so launch working directories do not affect assets.
 STYLE = (
@@ -137,8 +130,8 @@ def chart_config():
 def style_figure(fig, *, native_title=True):
     """Reserve separate space for controls, axes and the wrapping bottom legend.
 
-    Inline charts use an HTML heading in document flow. Standalone exports keep
-    their native title. Neither presentation changes the data or axis limits.
+    Titles and subtitles belong to the figure, including SVG/HTML exports.
+    Reserve a toolbar row above them and wrap bilingual text before plotting.
     """
     axes_hidden = fig.layout.xaxis.visible is False and fig.layout.yaxis.visible is False
     show_legend = fig.layout.showlegend is not False and any(
@@ -148,7 +141,7 @@ def style_figure(fig, *, native_title=True):
     margins = {
         "l": existing.get("l", 20),
         "r": existing.get("r", 20),
-        "t": 64 if native_title and fig.layout.title.text else 30,
+        "t": existing.get("t", 64) if native_title and fig.layout.title.text else 30,
         "b": (54 if axes_hidden else 100) if show_legend else 54,
     }
     fig.update_layout(
@@ -171,7 +164,7 @@ def style_figure(fig, *, native_title=True):
             itemsizing="constant",
             tracegroupgap=4,
         ),
-        title=dict(x=0.025, xanchor="left", font=dict(size=15)),
+        title=dict(x=0.025, xanchor="left", font=dict(size=15, weight=700)),
         hoverlabel=dict(bgcolor="white", font_size=12),
     )
     fig.update_layout(height=max(fig.layout.height or 360, 200 if axes_hidden else 320))
@@ -189,22 +182,52 @@ def style_figure(fig, *, native_title=True):
     return fig
 
 
+def _wrapped_heading(text, columns):
+    """Wrap plain text by display cells; CJK characters occupy two cells."""
+    lines, line, width = [], "", 0
+    for char in text:
+        size = 2 if east_asian_width(char) in {"W", "F"} else 1
+        if char == "\n" or width + size > columns:
+            # Prefer word boundaries in English, but allow CJK/long tokens to wrap.
+            split = line.rfind(" ")
+            if char != "\n" and split > columns // 2:
+                lines.append(line[:split])
+                line = line[split + 1 :]
+                width = sum(2 if east_asian_width(c) in {"W", "F"} else 1 for c in line)
+            else:
+                lines.append(line.rstrip())
+                line, width = "", 0
+        if char != "\n":
+            line += char
+            width += size
+    lines.append(line.rstrip())
+    return "<br>".join(escape(line) for line in lines), len(lines)
+
+
 def chart(fig, key=None, *, title=None, subtitle=None):
-    if title:
-        fig.update_layout(title_text=title)
-    heading = fig.layout.title.text
-    display = go.Figure(fig)
-    display.update_layout(title_text=None)
-    style_figure(display, native_title=False)
+    heading = title or fig.layout.title.text
+    # Keep the input figure ready for deferred HTML export as well as the
+    # toolbar's SVG export; both use exactly the same native heading.
+    if heading:
+        wrapped, title_lines = _wrapped_heading(heading, 36)
+        description, subtitle_lines = _wrapped_heading(subtitle, 48) if subtitle else ("", 0)
+        top = 30 + 22 * title_lines + 17 * subtitle_lines + 10
+        axes_hidden = fig.layout.xaxis.visible is False and fig.layout.yaxis.visible is False
+        height = max(fig.layout.height or 360, 200 if axes_hidden else 320) + top - 30
+        fig.update_layout(
+            height=height,
+            margin_t=top,
+            title=dict(
+                text=wrapped,
+                subtitle=dict(text=description, font=dict(size=12, color=COLORS["secondary"])),
+                y=1 - 30 / height,
+                yref="container",
+                yanchor="top",
+                automargin=True,
+            ),
+        )
+    display = style_figure(go.Figure(fig))
     with st.container(border=True, key=f"figure_{key}" if key else None):
-        if heading:
-            description = (
-                f'<div class="figure-subtitle">{escape(subtitle)}</div>' if subtitle else ""
-            )
-            st.markdown(
-                f'<div class="figure-heading"><div class="figure-title">{escape(heading)}</div>{description}</div>',
-                unsafe_allow_html=True,
-            )
         st.plotly_chart(
             display,
             width="stretch",

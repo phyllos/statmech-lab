@@ -2,6 +2,11 @@
 
 ## Unreleased / 未发布
 
+- Distinguish undefined and divergent population moments, including Student t and Pareto boundary cases; reject invalid explicit histogram bounds.
+- Share interactive/static plot colors and retain wrapped native titles and subtitles in SVG/HTML exports.
+- 区分未定义与发散的总体矩，覆盖 Student t 与 Pareto 边界；拒绝非法显式直方图范围。
+- 交互与静态图共享配色，SVG／HTML 导出保留换行图题与简短说明。
+
 - Preserve the active experiment, display scale and sampling walkthrough across language changes; require a selected language and retain Pearson's capitalization.
 - Share a persistent parameter panel across experiments, with right-aligned desktop actions and a two-row compact layout based on panel width. Parameters start expanded and can be collapsed.
 - Centralize distribution names, base parameters and comparison descriptions; show fixed parameters in selectors and identify aligned axes near charts.

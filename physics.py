@@ -52,15 +52,40 @@ def make_distribution(name: str, shape: float = 3.0, align: bool = False):
 
 
 def population_moments(rv) -> dict[str, float]:
-    """Analytical population moments; preserve nan/inf for nonfinite moments.
+    """Analytical moments: nan means undefined; inf means divergent.
 
     A symmetric distribution need not possess a moment-based skewness.  In
     particular, the Cauchy mean, variance, skewness, and kurtosis are undefined.
+    Variance is undefined without a finite mean; standardized moments are
+    undefined without finite variance. With these prerequisites satisfied, a
+    divergent numerator is represented by infinity.
     The UI must not replace these values with zero or a sample estimate.
     """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", RuntimeWarning)
         mean, variance, skewness, excess = rv.stats(moments="mvsk")
+    # SciPy uses +inf for the undefined Student t mean, and some standardized
+    # moments use nan even when the denominator exists and the numerator diverges.
+    # A variance requires a finite mean; skewness/kurtosis require finite variance.
+    if rv.dist.name == "t":
+        nu = rv.args[0] if rv.args else rv.kwds["df"]
+        if nu <= 1:
+            mean = variance = skewness = excess = np.nan
+        elif nu <= 2:
+            variance, skewness, excess = np.inf, np.nan, np.nan
+        elif nu <= 4:
+            skewness = np.nan if nu <= 3 else 0.0
+            excess = np.inf
+    elif rv.dist.name == "pareto":
+        alpha = rv.args[0] if rv.args else rv.kwds["b"]
+        if alpha <= 1:
+            mean, variance, skewness, excess = np.inf, np.nan, np.nan, np.nan
+        elif alpha <= 2:
+            variance, skewness, excess = np.inf, np.nan, np.nan
+        elif alpha <= 4:
+            if alpha <= 3:
+                skewness = np.inf
+            excess = np.inf
     return {
         "mean": float(mean),
         "variance": float(variance),
@@ -241,14 +266,22 @@ def sample_histogram(values, bins=48, bounds=None):
     """Return centers, densities, widths and bounds for a sample's display window.
 
     The default window spans the central 99% of observations. Constant samples
-    receive a nonzero-width window. This convenience function uses uniform bins;
+    receive a nonzero-width window. Explicit bounds must be finite and increasing.
+    This convenience function uses uniform bins;
     use histogram_density directly for quantile-spaced or other nonuniform bins.
     """
     values = np.asarray(values, dtype=float)
     if values.ndim != 1 or not values.size or not np.all(np.isfinite(values)):
         raise ValueError("Expected a nonempty, finite one-dimensional sample.")
-    lo, hi = np.quantile(values, [0.005, 0.995]) if bounds is None else bounds
-    if not np.isfinite(lo + hi) or hi <= lo:
-        lo, hi = float(np.min(values)) - 0.5, float(np.max(values)) + 0.5
+    bins = _positive_integer(bins, "bins")
+    if bounds is None:
+        lo, hi = np.quantile(values, [0.005, 0.995])
+        if hi <= lo:
+            lo, hi = float(np.min(values)) - 0.5, float(np.max(values)) + 0.5
+    else:
+        window = np.asarray(bounds, dtype=float)
+        if window.shape != (2,) or not np.all(np.isfinite(window)) or window[1] <= window[0]:
+            raise ValueError("Bounds must contain two finite, strictly increasing values.")
+        lo, hi = window
     edges = np.linspace(lo, hi, bins + 1)
     return (edges[:-1] + edges[1:]) / 2, histogram_density(values, edges), np.diff(edges), lo, hi

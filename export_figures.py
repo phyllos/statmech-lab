@@ -15,8 +15,9 @@ import numpy as np
 from scipy.stats import norm
 
 from physics import clt_experiment, make_distribution, population_moments, two_level
+from plot_theme import COLORS
 
-TEAL, AMBER, VIOLET = "#087E8B", "#E89B3F", "#7868B0"
+TEAL, AMBER, VIOLET = (COLORS[key] for key in ("theory", "sample", "accent"))
 
 
 def build_figures():
@@ -45,7 +46,7 @@ def build_figures():
     ax[0].fill_between(x, 0, rv.pdf(x), where=(x >= lo) & (x <= hi), color=TEAL, alpha=0.18)
     ax[0].set(title="Probability is area", xlabel="$x$", ylabel="$f(x)$")
     ax[1].plot(x, rv.cdf(x), color=TEAL, lw=2)
-    ax[1].scatter([lo, hi], [0.25, 0.75], color=AMBER, zorder=3)
+    ax[1].scatter([lo, hi], [0.25, 0.75], color=TEAL, edgecolors="white", linewidths=1.2, zorder=3)
     ax[1].set(title="The same interval in the CDF", xlabel="$x$", ylabel="$F(x)$")
     fig.suptitle("01  Distribution and cumulative probability", fontsize=15)
     figures["01_probability"] = fig
@@ -97,12 +98,12 @@ def build_figures():
         ax[0].plot(d["q_grid"] / N, d["entropy_per_particle"], label=f"N = {N}", color=color, lw=2)
     x = np.linspace(0.001, 0.999, 600)
     ax[0].plot(
-        x, -x * np.log(x) - (1 - x) * np.log1p(-x), color="#718493", ls="--", label="Large N"
+        x, -x * np.log(x) - (1 - x) * np.log1p(-x), color=COLORS["muted"], ls="--", label="Large N"
     )
     ax[0].set(title="Counting microstates", xlabel="$q/N$", ylabel=r"$S/(Nk_B)$")
     ax[0].legend(frameon=False)
-    ax[1].plot(x, np.log((1 - x) / x), color=TEAL, lw=2)
-    ax[1].axhline(0, color="#718493", lw=1)
+    ax[1].plot(x, np.log((1 - x) / x), color=VIOLET, lw=2)
+    ax[1].axhline(0, color=COLORS["muted"], lw=1)
     ax[1].axvspan(0.5, 1, color=VIOLET, alpha=0.08)
     ax[1].set(
         title="Inverse temperature (large-N approximation)",

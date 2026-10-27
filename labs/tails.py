@@ -15,7 +15,12 @@ DISTRIBUTIONS = ("pareto", "lognormal", "student_t", "cauchy", "normal", "expone
 
 
 def _fmt(value):
-    return f"{value:.3g}" if np.isfinite(value) else tr("No finite value", "无有限值")
+    if np.isnan(value):
+        return tr("Undefined", "未定义")
+    if np.isinf(value):
+        sign = "+∞" if value > 0 else "−∞"
+        return tr(f"Diverges ({sign})", f"发散（{sign}）")
+    return f"{value:.3g}"
 
 
 def _description(name, shape):
@@ -286,7 +291,7 @@ def render():
         yaxis_title=k_label,
     )
     convergence.update_xaxes(type="log", hoverformat=",d")
-    chart(convergence, key="tail_sample_kurtosis")
+    chart(convergence, key="tail_sample_kurtosis", title=tr("Sample kurtosis", "样本峰度"))
     left, right = st.columns([1, 2])
     with left:
         st.metric(tr(f"This sample: {k_phrase}", f"这批样本的{k_label}"), f"{sample_k:.3g}")
