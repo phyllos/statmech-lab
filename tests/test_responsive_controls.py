@@ -1,7 +1,7 @@
 """State and data guarantees behind the responsive control toolbar.
 
 Actual CSS visibility, sticky positioning and stale frontend labels require the
-manual UI checks in docs/architecture.md; AppTest cannot exercise those behaviors.
+manual UI checks in docs/en/architecture.md; AppTest cannot exercise those behaviors.
 """
 
 import json

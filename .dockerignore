@@ -1,6 +1,7 @@
 # Only application sources and dependency metadata enter the build context.
 **
 !Dockerfile
+!.python-version
 !pyproject.toml
 !uv.lock
 !app.py
