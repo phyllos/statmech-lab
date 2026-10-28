@@ -1,6 +1,6 @@
 [project]
 name = "stat-mech-lab"
-version = "0.1.0"
+version = "0.1.1"
 description = "Interactive probability and statistical mechanics experiments for PHYS 515"
 requires-python = ">=3.12,<3.15"
 dependencies = [

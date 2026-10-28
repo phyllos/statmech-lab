@@ -4,6 +4,9 @@
 
 ## 未发布
 
+## v0.1.1
+
+- 增加 GitHub Actions 检查，在 PR 和推送 `main` 时运行 Ruff、格式检查与 pytest。
 - 分离英文与简体中文文档，并提供对应页面的语言切换链接。
 - 开发与部署采用 Python 3.12，通过 `.python-version` 指定 uv 解释器，Docker 使用一致版本。
 - 增加 Streamlit Community Cloud 部署说明，本地监听设置与共用服务配置分离。
