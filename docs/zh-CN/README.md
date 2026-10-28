@@ -90,7 +90,7 @@ uv run --locked python export_figures.py
 
 ## 版本管理
 
-`v0.1.0` 标记项目初始基线；`main` 包含已集成的改动，版本标签标识发布快照。**Unreleased／未发布** 列出尚未归入版本的变更。参见 [版本说明](CHANGELOG.md) 和 [Git 使用约定](git-workflow.md)。
+项目版本为 **0.1.1**。`v0.1.0` 标记项目初始基线；`main` 包含已集成的改动，版本标签标识发布快照。**Unreleased／未发布** 列出尚未归入版本的变更。参见 [版本说明](CHANGELOG.md) 和 [Git 使用约定](git-workflow.md)。
 
 ## 架构与部署
 

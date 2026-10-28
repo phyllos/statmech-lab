@@ -1078,7 +1078,7 @@ wheels = [
 
 [[package]]
 name = "stat-mech-lab"
-version = "0.1.0"
+version = "0.1.1"
 source = { virtual = "." }
 dependencies = [
     { name = "matplotlib" },

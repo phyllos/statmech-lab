@@ -93,7 +93,7 @@ Examples build on PHYS 515 teaching and discussions of PDF/CDF, quantiles, media
 
 ## Version control
 
-`v0.1.0` marks the initial baseline. `main` contains integrated changes; version tags identify release snapshots. **Unreleased** lists changes not yet assigned to a release. See the [release notes](CHANGELOG.md) and [Git workflow](docs/en/git-workflow.md).
+The project version is **0.1.1**. `v0.1.0` marks the initial baseline. `main` contains integrated changes; version tags identify release snapshots. **Unreleased** lists changes not yet assigned to a release. See the [release notes](CHANGELOG.md) and [Git workflow](docs/en/git-workflow.md).
 
 ## Architecture and deployment
 

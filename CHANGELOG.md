@@ -4,6 +4,9 @@ English · [简体中文](docs/zh-CN/CHANGELOG.md) · [Project overview](README.
 
 ## Unreleased
 
+## v0.1.1
+
+- Add GitHub Actions checks for Ruff, formatting and pytest on pull requests and pushes to `main`.
 - Separate English and Simplified Chinese documentation, with links between matching pages.
 - Use Python 3.12 for development and deployment, with `.python-version` for uv and matching Docker configuration.
 - Add Streamlit Community Cloud deployment instructions and separate local binding from shared server configuration.
