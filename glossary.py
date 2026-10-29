@@ -39,6 +39,50 @@ def _term(
 
 TERMS = [
     _term(
+        "joint_density",
+        "Joint density",
+        "联合密度",
+        "p(x, y)",
+        "A density describing two continuous variables together; integrating it over a region gives the probability of that region.",
+        "描述两个连续变量的共同分布；在某个区域上积分，得到落入该区域的概率。",
+        ["joint"],
+        formula=r"P((X,Y)\in A)=\iint_A p(x,y)\,dx\,dy",
+    ),
+    _term(
+        "marginal_density",
+        "Marginal density",
+        "边缘密度",
+        "p_X(x)",
+        "The density of one variable when the other variable is integrated out.",
+        "对另一个变量积分后，得到单个变量的概率密度。",
+        ["joint"],
+        formula=r"p_X(x)=\int_{-\infty}^{\infty}p(x,y)\,dy",
+    ),
+    _term(
+        "conditional_density",
+        "Conditional density",
+        "条件密度",
+        "p(x | y₀)",
+        "The normalized density of X given Y = y₀, defined where p_Y(y₀) is positive.",
+        "给定 Y = y₀ 时 X 的归一化密度，在 p_Y(y₀) 大于零处定义。",
+        ["joint"],
+        note_en="For continuous Y, the exact event has probability zero. The conditional density is obtained from a density ratio, not by dividing by P(Y = y₀).",
+        note_zh="连续变量 Y 取某个精确值的概率为零；条件密度通过密度之比定义，而不是除以 P(Y = y₀)。",
+        formula=r"p(x\mid y_0)=p(x,y_0)/p_Y(y_0)",
+    ),
+    _term(
+        "correlation",
+        "Correlation coefficient",
+        "相关系数",
+        "ρ",
+        "Covariance divided by the two standard deviations, measuring linear dependence when both variances are finite and positive.",
+        "协方差除以两个标准差，用于衡量线性关联，要求两个方差均有限且大于零。",
+        ["joint"],
+        note_en="Zero correlation implies independence for jointly Gaussian variables, but not for general distributions.",
+        note_zh="联合高斯变量不相关时相互独立；一般分布中不相关不代表独立。",
+        formula=r"\rho=\mathrm{Cov}(X,Y)/(\sigma_X\sigma_Y)",
+    ),
+    _term(
         "pdf",
         "Probability density function",
         "概率密度函数",
@@ -398,6 +442,7 @@ TERMS = [
 
 
 RELATED_IDS = {
+    "joint": ["joint_density", "marginal_density", "conditional_density", "correlation"],
     "distributions": ["pdf", "cdf", "quantile", "iqr", "fence", "whisker"],
     "tails": ["survival", "skewness", "kurtosis", "excess_kurtosis", "moment", "heavy_tail"],
     "clt": ["iid", "sample", "mean", "lln", "clt", "standard_error"],
@@ -414,6 +459,7 @@ RELATED_IDS = {
 _BY_ID = {term["id"]: term for term in TERMS}
 _CATEGORIES = {
     "all": ("All topics", "全部主题"),
+    "joint": ("Joint & conditional probability", "联合与条件概率"),
     "distributions": ("Distributions & boxplots", "分布与箱型图"),
     "tails": ("Moments & tails", "矩与尾部"),
     "clt": ("Sampling & limit theorems", "抽样与极限定理"),

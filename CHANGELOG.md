@@ -4,6 +4,10 @@ English · [简体中文](docs/zh-CN/CHANGELOG.md) · [Project overview](README.
 
 ## Unreleased
 
+- Adapt shared-axis boxplot labels and legends to narrow chart widths; separate quartile and fence labels while retaining full hover readouts.
+
+- Add a bilingual joint Gaussian experiment linking correlation and conditioning to joint, marginal and conditional densities, with persistent controls and four glossary terms.
+
 ## v0.1.1
 
 - Add GitHub Actions checks for Ruff, formatting and pytest on pull requests and pushes to `main`.

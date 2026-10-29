@@ -285,3 +285,21 @@ def sample_histogram(values, bins=48, bounds=None):
         lo, hi = window
     edges = np.linspace(lo, hi, bins + 1)
     return (edges[:-1] + edges[1:]) / 2, histogram_density(values, edges), np.diff(edges), lo, hi
+
+
+def gaussian_conditioning(rho: float, y0: float):
+    """Return a standard bivariate Gaussian and its conditional law X | Y=y0.
+
+    Both marginals are N(0, 1); |rho| < 1 excludes singular covariance matrices.
+    Conditioning on an exact value uses densities, not a finite-width bin.
+    Returned SciPy laws retain full support; plotting windows do not normalize them.
+    """
+    if not np.isfinite(rho) or abs(rho) >= 1:
+        raise ValueError("Correlation must be finite and strictly between -1 and 1.")
+    if not np.isfinite(y0):
+        raise ValueError("The conditioning value must be finite.")
+    return {
+        "joint": stats.multivariate_normal(mean=[0, 0], cov=[[1, rho], [rho, 1]]),
+        "marginal": stats.norm(),
+        "conditional": stats.norm(loc=rho * y0, scale=np.sqrt((1 - rho) * (1 + rho))),
+    }
