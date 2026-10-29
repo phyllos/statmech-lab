@@ -8,7 +8,16 @@ from distribution_ui import distribution_description, distribution_help, distrib
 from i18n import language, tr
 from interactions import comparison_controls
 from physics import histogram_density, make_distribution, sample_summary
-from shared import COLORS, chart, control_panel, download_figure, header, insight, metric_row
+from shared import (
+    COLORS,
+    chart,
+    compact_chart,
+    control_panel,
+    download_figure,
+    header,
+    insight,
+    metric_row,
+)
 from state import initialize_controls
 
 DISTRIBUTIONS = ("normal", "uniform", "exponential", "lognormal", "pareto", "student_t", "cauchy")
@@ -337,12 +346,21 @@ def render():
         )
     )
 
+    compact = compact_chart("dist_box_width")
     box = go.Figure()
     jitter = np.random.default_rng(19).uniform(-0.10, 0.10, n)
     outliers = (sample < summary["lower_fence"]) | (sample > summary["upper_fence"])
     for mask, label, color in [
-        (~outliers, tr("Sample points", "样本点"), COLORS["sample"]),
-        (outliers, tr("Beyond fences", "围栏外观测"), COLORS["beyond_fences"]),
+        (
+            ~outliers,
+            tr("Sample", "样本") if compact else tr("Sample points", "样本点"),
+            COLORS["sample"],
+        ),
+        (
+            outliers,
+            tr("Beyond fences", "围栏外") if compact else tr("Beyond fences", "围栏外观测"),
+            COLORS["beyond_fences"],
+        ),
     ]:
         box.add_trace(
             go.Scatter(
@@ -367,7 +385,7 @@ def render():
             y=[sample_row],
             orientation="h",
             width=0.32,
-            name=tr("Sample boxplot", "样本箱型图"),
+            name=tr("Boxplot", "箱型图") if compact else tr("Sample boxplot", "样本箱型图"),
             marker_color=COLORS["sample"],
             fillcolor="rgba(232,155,63,.18)",
             boxpoints=False,
@@ -409,7 +427,9 @@ def render():
                 ],
                 y=[0.7] * 5,
                 mode="lines+markers",
-                name=tr("Saved sample summary", "保留样本摘要"),
+                name=tr("Saved", "保留样本")
+                if compact
+                else tr("Saved sample summary", "保留样本摘要"),
                 line=dict(color=COLORS["muted"], dash="dash", width=2),
                 marker=dict(
                     size=[8, 12, 9, 12, 8],
@@ -430,24 +450,57 @@ def render():
         go.Scatter(
             x=tq,
             y=[population_row] * 3,
-            mode="lines+markers+text",
+            mode="lines+markers" if compact else "lines+markers+text",
             text=["Q₁", tr("Median", "中位数"), "Q₃"],
+            hovertext=[
+                tr("First quartile Q₁", "第一四分位数 Q₁"),
+                tr("Median Q₂", "中位数 Q₂"),
+                tr("Third quartile Q₃", "第三四分位数 Q₃"),
+            ],
             textposition="top center",
             marker=dict(
                 size=[9, 12, 9], color=COLORS["theory"], symbol=["line-ns", "diamond", "line-ns"]
             ),
             line=dict(color=COLORS["theory"], width=4),
-            name=tr("Population quartiles", "总体四分位数"),
-            hovertemplate="%{text}: %{x:.3g}<extra></extra>",
+            name=tr("Population", "总体")
+            if compact
+            else tr("Population quartiles", "总体四分位数"),
+            hovertemplate="%{hovertext}: %{x:.3g}<extra></extra>",
         )
     )
+    if compact:
+        # Keep Q₂ above the other labels even when the quartiles are close together.
+        for value, label, anchor, shift in zip(
+            tq, ("Q₁", "Q₂", "Q₃"), ("right", "center", "left"), (7, 26, 7), strict=True
+        ):
+            box.add_annotation(
+                x=value,
+                y=population_row,
+                text=label,
+                showarrow=False,
+                xanchor=anchor,
+                yanchor="bottom",
+                yshift=shift,
+                font=dict(size=11, color=COLORS["ink"]),
+                captureevents=False,
+            )
     box.add_vrect(
         x0=left, x1=right, fillcolor=COLORS["theory"], opacity=0.06, line_width=0, layer="below"
     )
     if show_fences:
         for label, val, anchor, shift in [
-            (tr("Lower fence", "下围栏"), summary["lower_fence"], "left", 5),
-            (tr("Upper fence", "上围栏"), summary["upper_fence"], "right", -5),
+            (
+                tr("Lower", "下围栏") if compact else tr("Lower fence", "下围栏"),
+                summary["lower_fence"],
+                "left",
+                5,
+            ),
+            (
+                tr("Upper", "上围栏") if compact else tr("Upper fence", "上围栏"),
+                summary["upper_fence"],
+                "right",
+                -5,
+            ),
         ]:
             box.add_vline(x=val, line_dash="dot", line_color=COLORS["muted"])
             if lo <= val <= hi:
@@ -457,6 +510,12 @@ def render():
                     y=0.98,
                     yref="paper",
                     text=label,
+                    hovertext=(
+                        tr("Lower fence", "下围栏")
+                        if anchor == "left"
+                        else tr("Upper fence", "上围栏")
+                    )
+                    + f": {val:.3g}",
                     showarrow=False,
                     xanchor=anchor,
                     yanchor="top",
@@ -465,26 +524,32 @@ def render():
                     borderpad=3,
                     font=dict(size=11, color=COLORS["muted"]),
                 )
-    rows = [(0, tr("Raw sample", "原始样本"))]
+    rows = [(0, tr("Raw", "样本") if compact else tr("Raw sample", "原始样本"))]
     if previous is not None:
-        rows.append((0.7, tr("Saved sample", "保留样本")))
+        rows.append((0.7, tr("Saved", "保留") if compact else tr("Saved sample", "保留样本")))
     rows.extend(
         [
-            (sample_row, tr("Sample boxplot", "样本箱型图")),
-            (population_row, tr("Population quantiles", "总体分位数")),
+            (
+                sample_row,
+                tr("Boxplot", "箱型图") if compact else tr("Sample boxplot", "样本箱型图"),
+            ),
+            (
+                population_row,
+                tr("Pop.", "总体") if compact else tr("Population quantiles", "总体分位数"),
+            ),
         ]
     )
     box.update_layout(
-        height=390 if previous is not None else 320,
+        height=(390 if previous is not None else 320) + (40 if compact else 0),
         hovermode="closest",
         xaxis_title=tr("x · shared scale", "同一尺度下的 x"),
         yaxis=dict(
             tickvals=[row[0] for row in rows],
             ticktext=[row[1] for row in rows],
-            range=[-0.25, population_row + 0.5],
+            range=[-0.25, population_row + (0.9 if compact else 0.5)],
             showgrid=False,
         ),
-        margin=dict(l=95),
+        margin=dict(l=45 if compact else 95),
     )
     box.update_xaxes(range=[lo, hi])
     chart(box, key="dist_box", title=tr("One axis, three views", "同一条数轴，三种观察方式"))

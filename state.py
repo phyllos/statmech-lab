@@ -6,7 +6,7 @@ Samples are regenerated from settings and seeds, not persisted to disk.
 
 import streamlit as st
 
-CONTROL_PREFIXES = ("dist_", "tail_", "clt_", "ent_")
+CONTROL_PREFIXES = ("dist_", "tail_", "clt_", "ent_", "joint_")
 
 
 def remember_controls():

@@ -38,3 +38,6 @@ htmlcov/
 *.swp
 *.swo
 *~
+
+# Local scratch files and design drafts
+/scratch/

@@ -7,6 +7,7 @@ from unicodedata import east_asian_width
 
 import plotly.graph_objects as go
 import streamlit as st
+from streamlit.components.v2 import component
 
 from i18n import language, tr
 from plot_theme import COLORS
@@ -19,18 +20,41 @@ STYLE = (
 )
 
 
+_chart_width = component(
+    "chart_width",
+    html='<div class="width-probe" aria-hidden="true" style="width:100%;height:0"></div>',
+    js=(Path(__file__).parent / "styles" / "chart-width.js").read_text(encoding="utf-8"),
+)
+
+
+def compact_chart(key, breakpoint=600):
+    """Measure available chart width; rerun only when the layout mode changes."""
+    compact = st.session_state.get(key, {}).get("compact", False)
+    result = _chart_width(
+        key=key,
+        data={"breakpoint": breakpoint, "compact": compact},
+        default={"compact": compact},
+        width="stretch",
+        height=0,
+        on_compact_change=lambda: None,
+    )
+    return bool(result.compact)
+
+
 def _advance_draw(key, initial):
     st.session_state[key] = st.session_state.get(key, initial) + 1
 
 
 @contextmanager
-def control_panel(lab, *, seed_key, seed_start, action_key, rearrange=False):
+def control_panel(lab, *, seed_key=None, seed_start=None, action_key=None, rearrange=False):
     """Keep actions above one persistent set of parameter widgets.
 
     Pages append their display/comparison popovers to the returned toolbar.
     The parameter toggle changes visibility only, never the data or seed.
     CSS assigns stable action slots based on the panel's actual available width.
     """
+    if action_key is not None and (seed_key is None or seed_start is None):
+        raise ValueError("A sampling action requires a seed key and initial seed.")
     open_key = f"panel_open_{lab}"
     if open_key not in st.session_state:
         st.session_state[open_key] = True
@@ -45,13 +69,14 @@ def control_panel(lab, *, seed_key, seed_start, action_key, rearrange=False):
         with tools:
             with st.container(width="content", key=f"panel_toggle_{lab}"):
                 opened = st.toggle(tr("Parameters", "参数"), key=open_key, persist_state="session")
-            st.button(
-                tr("Rearrange", "重新排列") if rearrange else tr("Resample", "重新抽样"),
-                icon=":material/refresh:",
-                key=action_key,
-                on_click=_advance_draw,
-                args=(seed_key, seed_start),
-            )
+            if action_key is not None:
+                st.button(
+                    tr("Rearrange", "重新排列") if rearrange else tr("Resample", "重新抽样"),
+                    icon=":material/refresh:",
+                    key=action_key,
+                    on_click=_advance_draw,
+                    args=(seed_key, seed_start),
+                )
         state = "open" if opened else "closed"
         with st.container(key=f"control_body_{lab}_{state}"):
             yield tools
@@ -240,7 +265,7 @@ def chart(fig, key=None, *, title=None, subtitle=None):
         )
 
 
-def download_figure(fig, stem):
+def download_figure(fig, stem, *, label=None):
     # Deferred callbacks run outside the script thread: capture language/config
     # now, and retain an independent figure for the displayed experiment.
     snapshot = go.Figure(fig)
@@ -250,7 +275,7 @@ def download_figure(fig, stem):
         return style_figure(go.Figure(snapshot)).to_html(include_plotlyjs=True, config=config)
 
     st.download_button(
-        tr("Download interactive chart · HTML", "下载交互图 HTML"),
+        label if label is not None else tr("Download interactive chart · HTML", "下载交互图 HTML"),
         data=make_html,
         file_name=f"{stem}.html",
         mime="text/html",

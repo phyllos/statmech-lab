@@ -66,7 +66,7 @@ Detailed guides live in `docs/en/` and `docs/zh-CN/` with matching filenames. Ro
 
 ## Responsive controls
 
-`shared.control_panel` owns one widget tree and one resampling action. The parameter toggle is available at every size, starts expanded, and persists across navigation and language changes. The panel establishes a CSS query container: above 680px of usable panel width, the toggle sits on the left and the action group on the right. At 680px or less, a two-column grid places Parameters/Resample in row one and Display/Compare in row two. Optional actions do not leave orphan buttons. Narrow panels and short windows bound the parameter body's height; menus stay outside the scrolling body. Saved-comparison status appears inside the popover so the trigger keeps its width. Fixed distribution parameters appear in selectors; aligned coordinates are identified near charts to distinguish them from the original parameters.
+`shared.control_panel` owns one widget tree and an optional resampling action. Deterministic experiments omit the sampling action. The parameter toggle is available at every size, starts expanded, and persists across navigation and language changes. The panel establishes a CSS query container: above 680px of usable panel width, the toggle sits on the left and the action group on the right. At 680px or less, a two-column grid places Parameters/Resample in row one and Display/Compare in row two. Optional actions do not leave orphan buttons. Narrow panels and short windows bound the parameter body's height; menus stay outside the scrolling body. Saved-comparison status appears inside the popover so the trigger keeps its width. Fixed distribution parameters appear in selectors; aligned coordinates are identified near charts to distinguish them from the original parameters.
 
 Navigation uses per-language widget keys and a validated canonical page ID. Display scales and sampling steps use required segmented controls to preserve logical values across translation.
 
@@ -87,3 +87,5 @@ In the distributions experiment, use teal for population theory and the selected
 - Exercise resampling, saved comparisons and HTML downloads.
 - Check phone legends, quartile labels, hover/touch readouts and the distinct interval/fence colors.
 - Record the browser, viewport sizes and scenarios actually checked; mark anything unverified. Passing AppTest does not establish visual correctness.
+
+The shared-axis boxplot uses a small Streamlit v2 component to observe its available width. Below 600px, labels and legends are shortened and quartile annotations are staggered. The observer reports only layout-mode changes and disconnects on unmount; it does not query Streamlit internals. The plotted data and scales remain unchanged, and exports use the current labeling mode.

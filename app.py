@@ -16,6 +16,7 @@ LABS = {
     "tails": ("02  Shape & tails", "02  偏度、峰度与尾部"),
     "clt": ("03  LLN & CLT", "03  大数定律与 CLT"),
     "entropy": ("04  Microstates & entropy", "04  微观态与熵"),
+    "joint": ("05  Joint & conditional probability", "05  联合与条件概率"),
     "glossary": ("Reference · Glossary", "参考 · 术语表"),
 }
 
@@ -127,6 +128,8 @@ elif st.session_state.active_lab == "clt":
     from labs.clt import render
 elif st.session_state.active_lab == "entropy":
     from labs.entropy import render
+elif st.session_state.active_lab == "joint":
+    from labs.joint import render
 else:
     from glossary import render
 
