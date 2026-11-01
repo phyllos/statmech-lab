@@ -4,6 +4,10 @@ English · [简体中文](docs/zh-CN/CHANGELOG.md) · [Project overview](README.
 
 ## Unreleased
 
+- Include the responsive chart-width script in the Docker build context.
+
+- Add a bilingual finite-reservoir experiment comparing exact probabilities with the canonical ensemble at matched mean excitation, including fluctuation and total-variation readouts, deterministic half-up excitation rounding, persistent controls and three glossary terms.
+
 - Add a bilingual thermal-contact experiment with exact energy-sharing probabilities, linked entropy curves, persistent controls and finite-system boundary handling. Clarify zero-entropy endpoints and fixed-split readouts; retain system parameters in chart exports.
 
 - Adapt shared-axis boxplot labels and legends to narrow chart widths; separate quartile and fence labels while retaining full hover readouts.

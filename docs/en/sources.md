@@ -12,7 +12,7 @@ The project builds on PHYS 515 statistical physics teaching and conceptual discu
 
 The examples distinguish population quantities from sample statistics, connect different graphical representations and state the assumptions behind each conclusion. Interface explanations, numerical models and figure exports follow these teaching goals.
 
-The scope covers probability, sampling, two-level entropy and finite-system thermal contact. It does not include canonical ensembles, thermal reservoirs, ideal gases or the Gibbs correction.
+The scope covers probability, sampling, two-level entropy and finite-system thermal contact. It also introduces the canonical limit of a two-level reservoir; ideal gases and the Gibbs correction are not included.
 
 ## Definitions and software references
 
@@ -35,3 +35,5 @@ The arithmetic mean of iid Cauchy samples retains the same Cauchy distribution.
 For N two-level sites with fixed q, Ω=C(N,q) and S=kB ln Ω.
 Stirling's approximation gives S/(NkB)≈−x ln x−(1−x)ln(1−x), where x=q/N.
 Differentiating with respect to E=Nεx gives βε≈ln((1−x)/x). This does not assign probabilities to different q layers.
+
+For a system A coupled to a finite two-level reservoir B, the exact marginal is hypergeometric. With p = q/(N_A + N_B), its canonical approximation is binomial: P(q_A) = C(N_A,q_A) p^q_A (1−p)^(N_A−q_A). Both means are N_A p; the exact variance is the canonical variance N_A p(1−p) multiplied by N_B/(N_A+N_B−1). The approximation follows from expanding the reservoir entropy around its mean energy. It keeps all q_A = 0..N_A, including energies excluded by a finite reservoir.

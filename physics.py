@@ -354,3 +354,38 @@ def thermal_contact(n_a: int, n_b: int, q_total: int) -> dict:
         "mean": mean,
         "variance": variance,
     }
+
+
+def canonical_comparison(n_a: int, n_b: int, q_total: int) -> dict:
+    """Compare a finite two-level reservoir with a mean-matched canonical law.
+
+    The exact marginal is hypergeometric, inherited from thermal_contact.
+    p = q_total / (n_a + n_b) is the mean excited fraction in either subsystem,
+    not a fixed instantaneous bath energy. The canonical law is binomial on
+    ALL q_A = 0..n_a; do not truncate it to the finite reservoir's support.
+    beta*epsilon = log((1-p)/p) is a thermodynamic temperature parameter,
+    not an exact finite-difference derivative of the small reservoir entropy.
+    """
+    finite = thermal_contact(n_a, n_b, q_total)
+    q_a = np.arange(n_a + 1, dtype=int)
+    exact = np.zeros(n_a + 1)
+    exact[finite["q_a"]] = finite["probabilities"]
+    p = q_total / (n_a + n_b)
+    canonical = stats.binom.pmf(q_a, n_a, p)
+    if p == 0:
+        beta_eps = np.inf
+    elif p == 1:
+        beta_eps = -np.inf
+    else:
+        beta_eps = float(np.log1p(-p) - np.log(p))
+    return {
+        "q_a": q_a,
+        "exact": exact,
+        "canonical": canonical,
+        "fraction": p,
+        "beta_eps": beta_eps,
+        "mean": finite["mean"],
+        "exact_variance": finite["variance"],
+        "canonical_variance": n_a * p * (1 - p),
+        "total_variation": float(0.5 * np.sum(np.abs(exact - canonical))),
+    }
