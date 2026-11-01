@@ -4,6 +4,8 @@ English · [简体中文](docs/zh-CN/CHANGELOG.md) · [Project overview](README.
 
 ## Unreleased
 
+- Add experiment 08 linking two-level populations, mean energy and heat capacity through one temperature control, with a zero-temperature limit, fluctuation derivation, bilingual reference terms and chart exports.
+
 - Include the responsive chart-width script in the Docker build context.
 
 - Add a bilingual finite-reservoir experiment comparing exact probabilities with the canonical ensemble at matched mean excitation, including fluctuation and total-variation readouts, deterministic half-up excitation rounding, persistent controls and three glossary terms.

@@ -19,6 +19,7 @@ LABS = {
     "joint": ("05  Joint & conditional probability", "05  联合与条件概率"),
     "thermal": ("06  Thermal contact", "06  热接触与能量分配"),
     "canonical": ("07  Reservoir & canonical ensemble", "07  热库与正则系综"),
+    "response": ("08  Temperature & heat capacity", "08  温度与热容量"),
     "glossary": ("Reference · Glossary", "参考 · 术语表"),
 }
 
@@ -136,6 +137,8 @@ elif st.session_state.active_lab == "thermal":
     from labs.thermal import render
 elif st.session_state.active_lab == "canonical":
     from labs.canonical import render
+elif st.session_state.active_lab == "response":
+    from labs.response import render
 else:
     from glossary import render
 
