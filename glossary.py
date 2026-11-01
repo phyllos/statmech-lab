@@ -39,6 +39,31 @@ def _term(
 
 TERMS = [
     _term(
+        "velocity_component",
+        "Velocity component",
+        "速度分量",
+        "v_x",
+        "The signed projection of a velocity vector onto one axis. In a classical ideal gas at rest, each component has a zero-mean Gaussian distribution.",
+        "速度矢量在某一坐标轴上的有符号投影。无整体流动的经典理想气体中，每个分量服从均值为零的高斯分布。",
+        ["gas"],
+        note_en="A component can be negative; speed is the magnitude of the full vector, not the absolute value of one component.",
+        note_zh="分量可以为负；速率是整个矢量的大小，不是单个分量的绝对值。",
+        formula=r"v_x\sim\mathcal N(0,k_BT/m)",
+    ),
+    _term(
+        "maxwell_speed",
+        "Maxwell speed distribution",
+        "麦克斯韦速率分布",
+        "g(v)",
+        "The distribution of the magnitude of a three-dimensional classical ideal-gas velocity. The spherical-shell factor shifts its mode away from zero.",
+        "三维经典理想气体速度矢量大小的分布；球壳因子使其众数偏离零。",
+        ["gas"],
+        note_en="This canonical law assumes positive temperature and nonrelativistic classical motion. A finite isolated gas need not have this exact marginal.",
+        note_zh="这一正则分布假定正温度与非相对论经典运动；有限孤立气体的边缘分布不一定精确满足此形式。",
+        aliases=["Maxwell-Boltzmann", "speed", "速率", "球壳"],
+        formula=r"g(v)=\sqrt{2/\pi}\,v^2\sigma^{-3}e^{-v^2/(2\sigma^2)},\quad \sigma^2=k_BT/m,\ v\geq0",
+    ),
+    _term(
         "heat_capacity",
         "Heat capacity",
         "热容量",
@@ -70,7 +95,7 @@ TERMS = [
         "β, Z",
         "An equilibrium ensemble for a system in contact with a reservoir at fixed temperature; its energy fluctuates while its other specified constraints remain fixed.",
         "系统与固定温度的热库接触时的平衡系综；系统能量可以涨落，其他指定约束保持不变。",
-        ["canonical", "response"],
+        ["canonical", "response", "gas"],
         note_en="The Boltzmann weight applies to each microstate. Energy-level probabilities also include the number of microstates at that energy.",
         note_zh="玻尔兹曼权重作用于每个微观态；能量层的概率还需要乘上该能量下的微观态数。",
         aliases=["canonical", "partition function", "配分函数"],
@@ -95,7 +120,7 @@ TERMS = [
         "exp(−βE)",
         "The relative canonical weight of a microstate with energy E. Normalizing all microstate weights gives probabilities.",
         "能量为 E 的微观态在正则系综中的相对权重；对全部微观态权重归一化后得到概率。",
-        ["canonical", "response"],
+        ["canonical", "response", "gas"],
         note_en="A factor is not a normalized probability. For degenerate energy levels, multiply by the multiplicity before normalization.",
         note_zh="因子本身不是归一化概率；若能量层存在简并，须先乘微观态数，再归一化。",
         aliases=["Boltzmann weight", "玻尔兹曼权重", "degeneracy", "简并度"],
@@ -529,6 +554,7 @@ TERMS = [
 
 
 RELATED_IDS = {
+    "gas": ["velocity_component", "maxwell_speed", "canonical_ensemble", "boltzmann_factor"],
     "response": ["heat_capacity", "energy_fluctuation", "canonical_ensemble", "boltzmann_factor"],
     "canonical": [
         "thermal_reservoir",
@@ -563,6 +589,7 @@ RELATED_IDS = {
 _BY_ID = {term["id"]: term for term in TERMS}
 _CATEGORIES = {
     "all": ("All topics", "全部主题"),
+    "gas": ("Ideal gas & speed", "理想气体与速率"),
     "response": ("Temperature & heat capacity", "温度与热容量"),
     "canonical": ("Reservoir & canonical ensemble", "热库与正则系综"),
     "thermal": ("Thermal contact", "热接触与能量分配"),
