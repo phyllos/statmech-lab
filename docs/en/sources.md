@@ -12,7 +12,7 @@ The project builds on PHYS 515 statistical physics teaching and conceptual discu
 
 The examples distinguish population quantities from sample statistics, connect different graphical representations and state the assumptions behind each conclusion. Interface explanations, numerical models and figure exports follow these teaching goals.
 
-The scope covers probability, sampling and two-level entropy. It does not include canonical ensembles, thermal reservoirs, ideal gases or the Gibbs correction.
+The scope covers probability, sampling, two-level entropy and finite-system thermal contact. It does not include canonical ensembles, thermal reservoirs, ideal gases or the Gibbs correction.
 
 ## Definitions and software references
 

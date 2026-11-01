@@ -303,3 +303,54 @@ def gaussian_conditioning(rho: float, y0: float):
         "marginal": stats.norm(),
         "conditional": stats.norm(loc=rho * y0, scale=np.sqrt((1 - rho) * (1 + rho))),
     }
+
+
+def thermal_contact(n_a: int, n_b: int, q_total: int) -> dict:
+    """Exact equilibrium energy sharing between two weakly coupled two-level systems.
+
+    Both systems have the same gap epsilon. All combined microstates at fixed
+    q_total are equiprobable; interaction energy is neglected. This describes
+    an equilibrium distribution, not a time evolution or an exchange rate.
+    Entropy arrays refer to a *fixed split*, while log_total_multiplicity sums
+    over all allowed splits. Log-space normalization avoids count overflow.
+    """
+    n_a = _positive_integer(n_a, "n_a")
+    n_b = _positive_integer(n_b, "n_b")
+    if (
+        isinstance(q_total, (bool, np.bool_))
+        or not isinstance(q_total, (int, np.integer))
+        or not 0 <= q_total <= n_a + n_b
+    ):
+        raise ValueError("q_total must be an integer between 0 and n_a + n_b")
+    q_total = int(q_total)
+    q_a = np.arange(max(0, q_total - n_b), min(n_a, q_total) + 1, dtype=int)
+    q_b = q_total - q_a
+    log_a = two_level(n_a, 0)["log_multiplicity"][q_a]
+    log_b = two_level(n_b, 0)["log_multiplicity"][q_b]
+    entropy = log_a + log_b
+    log_total = float(special.logsumexp(entropy))
+    probabilities = np.exp(entropy - log_total)
+    # Hypergeometric modes from integer arithmetic: preserve exact two-way ties.
+    quotient, remainder = divmod((q_total + 1) * (n_a + 1), n_a + n_b + 2)
+    candidates = [quotient] if remainder else [quotient - 1, quotient]
+    modes = np.array([q for q in candidates if q_a[0] <= q <= q_a[-1]], dtype=int)
+    mean = q_total * n_a / (n_a + n_b)
+    variance = (
+        q_total
+        * (n_a / (n_a + n_b))
+        * (n_b / (n_a + n_b))
+        * (n_a + n_b - q_total)
+        / (n_a + n_b - 1)
+    )
+    return {
+        "q_a": q_a,
+        "q_b": q_b,
+        "log_omega_a": log_a,
+        "log_omega_b": log_b,
+        "split_entropy": entropy,
+        "probabilities": probabilities,
+        "log_total_multiplicity": log_total,
+        "modes": modes,
+        "mean": mean,
+        "variance": variance,
+    }
