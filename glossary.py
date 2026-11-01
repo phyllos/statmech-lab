@@ -39,13 +39,38 @@ def _term(
 
 TERMS = [
     _term(
+        "heat_capacity",
+        "Heat capacity",
+        "热容量",
+        "C",
+        "The change of mean energy per change in temperature, with the model's other parameters held fixed.",
+        "保持模型其他参数不变时，平均能量对温度的变化率。",
+        ["response"],
+        note_en="Here N and the gap ε are fixed. The smooth two-level heat-capacity peak is not a phase transition.",
+        note_zh="这里固定 N 与能隙 ε；二能级热容量的平滑峰值不是相变。",
+        aliases=["specific heat", "Schottky", "比热", "肖特基"],
+        formula=r"C=(\partial U/\partial T)_{N,\epsilon}",
+    ),
+    _term(
+        "energy_fluctuation",
+        "Energy fluctuations",
+        "能量涨落",
+        "Var(E)",
+        "The equilibrium spread of system energy around its mean; in a canonical ensemble it is related to heat capacity.",
+        "平衡态下系统能量围绕均值的分散程度；在正则系综中，它与热容量有关。",
+        ["response", "canonical", "thermal"],
+        note_en="For a temperature-independent Hamiltonian. A vanishing high-temperature heat capacity need not mean vanishing energy variance.",
+        note_zh="该关系适用于不显含温度的哈密顿量；高温热容量趋于零，不意味着能量方差也趋于零。",
+        formula=r"\operatorname{Var}(E)=k_BT^2 C",
+    ),
+    _term(
         "canonical_ensemble",
         "Canonical ensemble",
         "正则系综",
         "β, Z",
         "An equilibrium ensemble for a system in contact with a reservoir at fixed temperature; its energy fluctuates while its other specified constraints remain fixed.",
         "系统与固定温度的热库接触时的平衡系综；系统能量可以涨落，其他指定约束保持不变。",
-        ["canonical"],
+        ["canonical", "response"],
         note_en="The Boltzmann weight applies to each microstate. Energy-level probabilities also include the number of microstates at that energy.",
         note_zh="玻尔兹曼权重作用于每个微观态；能量层的概率还需要乘上该能量下的微观态数。",
         aliases=["canonical", "partition function", "配分函数"],
@@ -58,7 +83,7 @@ TERMS = [
         "B",
         "A system that exchanges energy with another system while its temperature changes negligibly over the relevant energy exchanges.",
         "与另一系统交换能量时，在相关能量交换范围内温度变化可以忽略的系统。",
-        ["canonical"],
+        ["canonical", "response"],
         note_en="A finite bath need not satisfy this approximation. In the two-level model, increasing N_B at fixed excited fraction suppresses finite-reservoir corrections.",
         note_zh="有限热库不一定满足这一近似；二能级模型中，固定激发比例增大 N_B 可以减小有限热库修正。",
         aliases=["heat bath", "reservoir", "热浴"],
@@ -70,7 +95,7 @@ TERMS = [
         "exp(−βE)",
         "The relative canonical weight of a microstate with energy E. Normalizing all microstate weights gives probabilities.",
         "能量为 E 的微观态在正则系综中的相对权重；对全部微观态权重归一化后得到概率。",
-        ["canonical"],
+        ["canonical", "response"],
         note_en="A factor is not a normalized probability. For degenerate energy levels, multiply by the multiplicity before normalization.",
         note_zh="因子本身不是归一化概率；若能量层存在简并，须先乘微观态数，再归一化。",
         aliases=["Boltzmann weight", "玻尔兹曼权重", "degeneracy", "简并度"],
@@ -504,6 +529,7 @@ TERMS = [
 
 
 RELATED_IDS = {
+    "response": ["heat_capacity", "energy_fluctuation", "canonical_ensemble", "boltzmann_factor"],
     "canonical": [
         "thermal_reservoir",
         "canonical_ensemble",
@@ -537,6 +563,7 @@ RELATED_IDS = {
 _BY_ID = {term["id"]: term for term in TERMS}
 _CATEGORIES = {
     "all": ("All topics", "全部主题"),
+    "response": ("Temperature & heat capacity", "温度与热容量"),
     "canonical": ("Reservoir & canonical ensemble", "热库与正则系综"),
     "thermal": ("Thermal contact", "热接触与能量分配"),
     "joint": ("Joint & conditional probability", "联合与条件概率"),

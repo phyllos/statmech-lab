@@ -16,6 +16,38 @@ from scipy import special, stats
 DISTRIBUTIONS = ("normal", "uniform", "exponential", "lognormal", "pareto", "student_t", "cauchy")
 
 
+def two_level_response(theta):
+    """Canonical response of independent, nondegenerate 0/epsilon units.
+
+    theta = k_B T / epsilon is a finite, nonnegative scalar or array.
+    Zero denotes the T -> 0+ limit. Energy, heat capacity and energy variance
+    are normalized by N*epsilon, N*k_B and N*epsilon**2 respectively.
+    These canonical results are exact for any N; no Stirling approximation.
+    """
+    temperature = np.asarray(theta, dtype=float)
+    if np.any(~np.isfinite(temperature)) or np.any(temperature < 0):
+        raise ValueError("theta must be finite and nonnegative")
+    # Only negative exponentials are evaluated. Reciprocal overflow at tiny
+    # positive temperatures has the same zero-response limit as theta = 0.
+    with np.errstate(over="ignore", divide="ignore", under="ignore"):
+        beta = np.divide(1.0, temperature)
+        weight = np.exp(-beta)
+        log_z = np.log1p(weight)
+        excited = weight / (1 + weight)
+        variance = excited * (1 - excited)
+        finite_beta = np.where(np.isfinite(beta), beta, 1.0)
+        log_capacity = 2 * np.log(finite_beta) - finite_beta - 2 * log_z
+        capacity = np.where(np.isfinite(beta), np.exp(log_capacity), 0.0)
+    return {
+        "excited": excited,
+        "ground": 1 - excited,
+        "energy": excited,
+        "heat_capacity": capacity,
+        "energy_variance": variance,
+        "log_partition": log_z,
+    }
+
+
 def make_distribution(name: str, shape: float = 3.0, align: bool = False):
     """Return a frozen SciPy distribution, optionally median/IQR aligned.
 
