@@ -33,20 +33,23 @@ See the [deployment guide](docs/en/deployment.md) for setup, verification, shari
 4. **Microstates & entropy**: two-level configurations at fixed excitation count, multiplicity, entropy, and large-N inverse temperature.
 5. **Joint & conditional probability**: vary correlation and the observed Y value to connect a Gaussian density slice, the marginal, and the normalized conditional density.
 6. **Thermal contact & energy sharing**: compare exact split probabilities, multiplicities and entropies for two two-level systems at fixed total energy, including equilibrium fluctuations.
+7. **Reservoir & canonical ensemble**: enlarge a finite two-level reservoir and compare exact energy-sharing probabilities with a mean-matched canonical law, including energy fluctuations and total variation.
 
 The interface starts in English. Use **English / 中文** below the sidebar brand to switch languages while keeping the current experiment, parameters, and sampled data.
 
 Display settings and comparisons are available through compact controls; the CLT walkthrough is collapsed by default. Optional interactions in the distribution and CLT experiments let you link the interval across plots, retain a result for comparison, and replay the CLT sampling process step by step. See [interaction guide](docs/en/interactions.md).
 
-The sidebar **Glossary** provides 34 bilingual terms. Search in either language, by abbreviation or symbol, and filter by topic. Each experiment also ends with a collapsible list of relevant terms. Opening the glossary and returning to an experiment preserves its settings and sample.
+The sidebar **Glossary** provides 37 bilingual terms. Search in either language, by abbreviation or symbol, and filter by topic. Each experiment also ends with a collapsible list of relevant terms. Opening the glossary and returning to an experiment preserves its settings and sample.
 
-Direct links accept `?lab=distributions`, `?lab=tails`, `?lab=clt`, `?lab=entropy`, `?lab=joint`, `?lab=thermal`, or `?lab=glossary`. Add `&lang=zh` or `&lang=en` to select a language. For example: `?lab=glossary&lang=zh`.
+Direct links accept `?lab=distributions`, `?lab=tails`, `?lab=clt`, `?lab=entropy`, `?lab=joint`, `?lab=thermal`, `?lab=canonical`, or `?lab=glossary`. Add `&lang=zh` or `&lang=en` to select a language. For example: `?lab=glossary&lang=zh`.
 
 Hover for values, drag to zoom, and double-click to reset. The toolbar supports panning and SVG export; each experiment also offers a standalone interactive HTML chart.
 
 The joint Gaussian experiment fixes both marginals at N(0, 1) and generates no random samples. Plot ranges stay fixed; zero correlation implies independence here because the variables are jointly Gaussian.
 
 The thermal-contact experiment uses equal energy gaps and negligible coupling energy, with equal weights for combined microstates at fixed total energy. Its entropy curves fix both subsystem energies; the entropy with only the total energy constrained is constant.
+
+The reservoir experiment compares both laws at p = q/(N_A + N_B), after rounding the target excitation count to the nearest integer, with halves rounded up. The canonical law retains its full support and uses βε = ln((1−p)/p); this mean-matched parameter is not an exact finite-system entropy derivative. The interface covers positive temperatures and the β = 0 limit.
 
 ## Reproducibility and conventions
 
@@ -73,7 +76,7 @@ plot_theme.py          Semantic colors shared by interactive and static plots
 shared.py              Shared chart styling and UI components
 styles/app.css         Responsive layout and visual styles
 interactions.py        Comparison controls and sampling walkthrough
-labs/                  Six experiment pages
+labs/                  Seven experiment pages
 export_figures.py      Batch scientific figure export
 docs/en/               English teaching notes, architecture and deployment guides
 docs/zh-CN/            Simplified Chinese documentation
@@ -93,7 +96,7 @@ Static PNG and SVG figures are written to `figs/`. The exporter and app share nu
 
 ## Scope and sources
 
-The lab covers probability distributions, sampling, limit theorems, two-level entropy and finite-system thermal contact. Canonical ensembles, thermal reservoirs, ideal gases and Liouville evolution are outside its current scope.
+The lab covers probability distributions, sampling, limit theorems, two-level entropy and finite-system thermal contact. It also introduces the canonical limit of a two-level reservoir. Ideal gases and Liouville evolution are outside its current scope.
 
 Examples build on PHYS 515 teaching and discussions of PDF/CDF, quantiles, median/IQR alignment, survival functions, Pareto distributions and boxplots. See [source notes](docs/en/sources.md).
 

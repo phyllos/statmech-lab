@@ -17,5 +17,6 @@
 !labs/*.py
 !styles/
 !styles/app.css
+!styles/chart-width.js
 !.streamlit/
 !.streamlit/config.toml
