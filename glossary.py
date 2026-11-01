@@ -39,6 +39,30 @@ def _term(
 
 TERMS = [
     _term(
+        "thermal_contact",
+        "Thermal contact",
+        "热接触",
+        "E_A + E_B = E",
+        "A coupling that allows two systems to exchange energy while their combined energy remains fixed when isolated from the surroundings.",
+        "允许两个系统交换能量的耦合；若组合系统与外界隔离，其总能量保持不变。",
+        ["thermal"],
+        note_en="Here the coupling is weak enough to neglect its interaction energy. The model specifies equilibrium weights, not exchange dynamics.",
+        note_zh="这里采用弱耦合近似，忽略相互作用能；模型给出平衡权重，不描述能量交换动力学。",
+    ),
+    _term(
+        "energy_sharing",
+        "Energy-sharing distribution",
+        "能量分配分布",
+        "P(q_A)",
+        "At fixed total excitation, a split is weighted by the product of the two subsystem multiplicities. For identical two-level gaps this is a hypergeometric distribution.",
+        "总激发数固定时，每种分配的权重是两个子系统微观态数的乘积；相同二能级能隙的模型对应超几何分布。",
+        ["thermal"],
+        aliases=["hypergeometric", "超几何", "energy sharing"],
+        note_en="A peak marks the most probable split, not a unique accessible state. Finite systems can have two tied modes and fluctuate among allowed splits.",
+        note_zh="峰值标记最可能的分配，不代表唯一可达状态。有限系统可能有两个并列峰值，并在允许的分配之间涨落。",
+        formula=r"P(q_A)=\frac{\binom{N_A}{q_A}\binom{N_B}{q-q_A}}{\binom{N_A+N_B}{q}}",
+    ),
+    _term(
         "joint_density",
         "Joint density",
         "联合密度",
@@ -368,7 +392,7 @@ TERMS = [
         "Ω",
         "The number of microstates compatible with the specified macrostate. For N distinguishable two-level units with q excitations, it is C(N,q).",
         "满足指定宏观态的微观态数量；对 N 个可区分二能级单元、q 个激发，数量是 C(N,q)。",
-        ["entropy"],
+        ["entropy", "thermal"],
         note_en="This is a count, not a probability distribution over different energies. The fixed-q ensemble samples only that energy layer.",
         note_zh="这是计数，不是不同能量之间的概率分布；固定 q 的系综只在该能量层内抽样。",
         aliases=["omega", "state counting", "combinatorial", "组合数", "态计数"],
@@ -381,7 +405,7 @@ TERMS = [
         "S",
         "In the counting model used here, entropy is Boltzmann's constant times the logarithm of the number of compatible microstates.",
         "在这里的计数模型中，熵等于玻尔兹曼常数乘以可达微观态数的对数。",
-        ["entropy"],
+        ["entropy", "thermal"],
         note_en="Taking a logarithm turns multiplication of independent state counts into addition of entropies. S/kB is dimensionless.",
         note_zh="对独立系统取对数，可以把微观态数量的乘法转化为熵的加法；S/kB 无量纲。",
         aliases=["Boltzmann", "kB", "k_B", "熵", "玻尔兹曼"],
@@ -394,7 +418,7 @@ TERMS = [
         "E, V, N fixed",
         "An equilibrium ensemble with fixed energy and other specified macroscopic constraints, assigning equal weight to accessible microstates.",
         "固定能量及其他指定宏观约束的平衡系综，对可达微观态赋予相同权重。",
-        ["entropy"],
+        ["entropy", "thermal"],
         note_en="In the discrete two-level model, fixed N and E mean fixed q. Equal weight applies within this q layer, not across every q value.",
         note_zh="在离散二能级模型中，固定 N、E 就是固定 q；等权重作用于同一 q 层，而不是所有 q 值。",
         aliases=["ensemble", "isolated", "系综", "孤立系统"],
@@ -420,7 +444,7 @@ TERMS = [
         "β",
         "The quantity β=1/(kBT), with units of inverse energy. It is the energy derivative of the dimensionless entropy S/kB.",
         "β=1/(kBT)，单位为能量的倒数；它等于无量纲熵 S/kB 对能量的导数。",
-        ["entropy"],
+        ["entropy", "thermal"],
         note_en="The app plots dimensionless βε using a large-N approximation. β=0 is an infinite-temperature limit, not zero temperature.",
         note_zh="应用画出无量纲 βε，并采用大 N 近似；β=0 对应无限温极限，而不是零温。",
         aliases=["beta", "temperature", "negative temperature", "温度", "负温度"],
@@ -442,6 +466,14 @@ TERMS = [
 
 
 RELATED_IDS = {
+    "thermal": [
+        "thermal_contact",
+        "energy_sharing",
+        "multiplicity",
+        "entropy",
+        "microcanonical",
+        "inverse_temperature",
+    ],
     "joint": ["joint_density", "marginal_density", "conditional_density", "correlation"],
     "distributions": ["pdf", "cdf", "quantile", "iqr", "fence", "whisker"],
     "tails": ["survival", "skewness", "kurtosis", "excess_kurtosis", "moment", "heavy_tail"],
@@ -459,6 +491,7 @@ RELATED_IDS = {
 _BY_ID = {term["id"]: term for term in TERMS}
 _CATEGORIES = {
     "all": ("All topics", "全部主题"),
+    "thermal": ("Thermal contact", "热接触与能量分配"),
     "joint": ("Joint & conditional probability", "联合与条件概率"),
     "distributions": ("Distributions & boxplots", "分布与箱型图"),
     "tails": ("Moments & tails", "矩与尾部"),
