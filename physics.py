@@ -16,6 +16,33 @@ from scipy import special, stats
 DISTRIBUTIONS = ("normal", "uniform", "exponential", "lognormal", "pareto", "student_t", "cauchy")
 
 
+def ideal_gas_speeds(temperature_ratio: float) -> dict:
+    """One-particle canonical velocities in a 3D classical ideal gas at rest.
+
+    Mass m and reference temperature T_0 stay fixed. Velocity coordinates are
+    u_i = v_i/v_0, with v_0 = sqrt(k_B T_0/m), and theta = T/T_0 > 0.
+    A component is Gaussian; the vector magnitude is Maxwell distributed.
+    Returned densities are normalized in these dimensionless coordinates and
+    keep full support independently of the UI's finite plotting window.
+    """
+    if (
+        isinstance(temperature_ratio, (bool, np.bool_))
+        or not isinstance(temperature_ratio, (int, float, np.integer, np.floating))
+        or not np.isfinite(temperature_ratio)
+        or temperature_ratio <= 0
+    ):
+        raise ValueError("temperature_ratio must be a positive finite scalar")
+    sigma = float(np.sqrt(temperature_ratio))
+    return {
+        "component": stats.norm(scale=sigma),
+        "speed": stats.maxwell(scale=sigma),
+        "component_sd": sigma,
+        "most_probable_speed": np.sqrt(2.0) * sigma,
+        "mean_speed": np.sqrt(8.0 / np.pi) * sigma,
+        "rms_speed": np.sqrt(3.0) * sigma,
+    }
+
+
 def two_level_response(theta):
     """Canonical response of independent, nondegenerate 0/epsilon units.
 

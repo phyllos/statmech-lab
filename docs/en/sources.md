@@ -12,7 +12,7 @@ The project builds on PHYS 515 statistical physics teaching and conceptual discu
 
 The examples distinguish population quantities from sample statistics, connect different graphical representations and state the assumptions behind each conclusion. Interface explanations, numerical models and figure exports follow these teaching goals.
 
-The scope covers probability, sampling, two-level entropy and finite-system thermal contact. It also introduces the canonical limit and temperature response of two-level units; ideal gases and the Gibbs correction are not included.
+The scope covers probability, sampling, two-level entropy and finite-system thermal contact. It also introduces the canonical limit and temperature response of two-level units; ideal-gas velocity distributions are included, while gas mixing entropy and the Gibbs correction remain outside the scope.
 
 ## Definitions and software references
 
@@ -39,3 +39,5 @@ Differentiating with respect to E=Nεx gives βε≈ln((1−x)/x). This does not
 For a system A coupled to a finite two-level reservoir B, the exact marginal is hypergeometric. With p = q/(N_A + N_B), its canonical approximation is binomial: P(q_A) = C(N_A,q_A) p^q_A (1−p)^(N_A−q_A). Both means are N_A p; the exact variance is the canonical variance N_A p(1−p) multiplied by N_B/(N_A+N_B−1). The approximation follows from expanding the reservoir entropy around its mean energy. It keeps all q_A = 0..N_A, including energies excluded by a finite reservoir.
 
 For independent, nondegenerate two-level units coupled to an ideal reservoir, θ = kB T/ε and p = exp(−1/θ)/(1+exp(−1/θ)). The partition function is Z = (1+exp(−1/θ))^N, U/(Nε) = p and C/(NkB) = p(1−p)/θ². These are exact canonical results, without Stirling's approximation. For T>0, Var(E) = kB T² C. At T→0⁺, U and C vanish; at high temperature, U/(Nε)→1/2 and Var(E)/(Nε²)→1/4 while C/(NkB)→0. The smooth two-level heat-capacity peak does not indicate a phase transition.
+
+For a three-dimensional classical ideal gas at rest in the canonical ensemble, each velocity component is Gaussian with variance σ² = kB T/m. Integrating over a velocity-space shell gives g(v) = √(2/π) v² σ⁻³ exp(−v²/(2σ²)), v≥0. Its mode, mean and RMS speed are √2 σ, √(8/π) σ and √3 σ. Speed is the magnitude of all three components, not |v_x|. Experiment 09 fixes v₀ = √(kB T₀/m) and varies T/T₀; plotted densities are normalized in v/v₀ over their full support, not the cropped view. The canonical law is not an exact finite-isolated-system marginal and is not derived from the CLT.
