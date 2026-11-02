@@ -30,6 +30,21 @@ These steps replay existing data and never advance the random seed. The instruct
 
 The classical CLT requires finite variance. Repeating a Cauchy experiment does not make a Gaussian limit valid.
 
+## Explore equilibrium models
+
+Experiments 05–10 compute distributions or equilibrium states from their parameters. Moving a slider changes the model setting; it does not advance a trajectory in time.
+
+| Experiment | Exploration |
+| --- | --- |
+| 05 · Joint probability | Hold correlation fixed and move the conditional slice; compare the changing conditional density with the unchanged marginal. |
+| 06 · Thermal contact | Fix total energy and select different energy splits; compare their probabilities and entropies. |
+| 07 · Reservoir | Keep system size and target excitation fraction fixed while enlarging the reservoir; compare exact and canonical fluctuations. |
+| 08 · Temperature response | Change temperature and relate level populations to mean energy and heat capacity. |
+| 09 · Ideal gas | Compare velocity components and speed at the same temperature on fixed reference axes. |
+| 10 · Free energy | Change temperature to follow the free-energy minima; add a field to distinguish stable and metastable branches. |
+
+The [model notes](sources.md) explain the constraints, approximations and limits behind these comparisons.
+
 ## Information hierarchy
 
 The default view shows primary parameters, core plots and brief reading cues. Display conventions and comparisons use compact popovers; derivations and the sampling walkthrough are collapsed. Critical conditions such as undefined moments and failure of the classical CLT remain visible. Detailed normalization and display-window notes remain in the mathematical sections.

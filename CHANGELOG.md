@@ -4,21 +4,27 @@ English · [简体中文](docs/zh-CN/CHANGELOG.md) · [Project overview](README.
 
 ## Unreleased
 
-- Add experiment 10 linking quartic Landau free-energy minima and equilibrium order parameters, with optional field control, explicit critical/spinodal handling, bilingual terms and self-contained chart exports.
+### Added
 
-- Add experiment 09 comparing a Gaussian velocity component with Maxwell speed through one temperature control, with fixed reference units, spherical-shell derivations, bilingual terms and chart exports.
+- Add experiment 05, **Joint & conditional probability**, linking Gaussian correlation, marginal densities and conditional slices.
+- Add experiment 06, **Thermal contact & energy sharing**, with exact energy-sharing probabilities, entropy and equilibrium fluctuations.
+- Add experiment 07, **Reservoir & canonical ensemble**, comparing finite-reservoir probabilities with a canonical approximation at the same mean energy.
+- Add experiment 08, **Temperature & heat capacity**, connecting two-level populations, mean energy, heat capacity and energy fluctuations.
+- Add experiment 09, **Ideal gas & speed**, comparing Gaussian velocity components with the Maxwell speed distribution.
+- Add experiment 10, **Free energy & stability**, connecting Landau free-energy minima, equilibrium branches and metastability.
+- Extend bilingual explanations, glossary entries and chart downloads to the new experiments.
 
-- Add experiment 08 linking two-level populations, mean energy and heat capacity through one temperature control, with a zero-temperature limit, fluctuation derivation, bilingual reference terms and chart exports.
+### Changed
 
-- Include the responsive chart-width script in the Docker build context.
+- Improve shared-axis boxplot labels and legends on narrow screens while retaining full hover readouts.
+- Use teal markers with white outlines for selected theoretical values in the entropy and inverse-temperature plots.
+- Reorganize the project overview and model notes to cover the expanded experiment collection.
 
-- Add a bilingual finite-reservoir experiment comparing exact probabilities with the canonical ensemble at matched mean excitation, including fluctuation and total-variation readouts, deterministic half-up excitation rounding, persistent controls and three glossary terms.
+### Fixed
 
-- Add a bilingual thermal-contact experiment with exact energy-sharing probabilities, linked entropy curves, persistent controls and finite-system boundary handling. Clarify zero-entropy endpoints and fixed-split readouts; retain system parameters in chart exports.
-
-- Adapt shared-axis boxplot labels and legends to narrow chart widths; separate quartile and fence labels while retaining full hover readouts.
-
-- Add a bilingual joint Gaussian experiment linking correlation and conditioning to joint, marginal and conditional densities, with persistent controls and four glossary terms.
+- Include correlation and conditioning values in joint Gaussian chart exports.
+- Correct equilibrium-point classification at the Landau critical temperature for very small nonzero fields.
+- Include the chart-width observer in Docker builds to prevent missing-resource errors.
 
 ## v0.1.1
 

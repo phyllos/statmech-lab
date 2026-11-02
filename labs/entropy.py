@@ -161,7 +161,7 @@ def render():
                 y=[log_omega / n],
                 mode="markers",
                 name=tr("Selected energy", "当前能量"),
-                marker=dict(color=COLORS["sample"], size=12, line=dict(color="white", width=2)),
+                marker=dict(color=COLORS["theory"], size=12, line=dict(color="white", width=2)),
             )
         )
         fig.update_layout(
@@ -217,7 +217,7 @@ def render():
                     y=[beta],
                     mode="markers",
                     name=tr("Selected energy", "当前能量"),
-                    marker=dict(color=COLORS["sample"], size=12, line=dict(color="white", width=2)),
+                    marker=dict(color=COLORS["theory"], size=12, line=dict(color="white", width=2)),
                 )
             )
         fig.update_layout(

@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 import numpy as np
+import plotly.graph_objects as go
 import pytest
 from scipy.integrate import quad
 from streamlit.testing.v1 import AppTest
@@ -60,13 +61,34 @@ def _data(app):
 
 
 @pytest.mark.parametrize("lang", ["en", "zh"])
-def test_joint_controls_navigation_and_export(lang):
+def test_joint_controls_navigation_and_export(lang, monkeypatch):
+    from labs import joint
+
+    exported = []
+    original_download = joint.download_figure
+
+    def capture_download(figure, *args, **kwargs):
+        exported.append(go.Figure(figure))
+        return original_download(figure, *args, **kwargs)
+
+    monkeypatch.setattr(joint, "download_figure", capture_download)
+
+    def check_export_parameters(rho, y0):
+        figures = [json.loads(c.proto.spec) for c in app.get("plotly_chart")]
+        for figure in [*figures, exported[-1].to_plotly_json()]:
+            subtitle = figure["layout"]["title"]["subtitle"]["text"]
+            assert f"ρ = {rho}" in subtitle
+            assert f"Y = {y0}" in subtitle
+        displayed_subtitle = figures[1]["layout"]["title"]["subtitle"]["text"]
+        assert exported[-1].layout.title.subtitle.text == displayed_subtitle
+
     app = AppTest.from_file(str(APP), default_timeout=20)
     app.query_params = {"lab": "joint", "lang": lang}
     app.run()
     assert not app.exception
     assert len(app.get("plotly_chart")) == 2
     assert len(app.get("download_button")) == 1
+    check_export_parameters("0.6", "1")
     expected_label = (
         "Download conditional density comparison · HTML"
         if lang == "en"
@@ -79,6 +101,7 @@ def test_joint_controls_navigation_and_export(lang):
     app.slider(key="joint_rho").set_value(-0.8).run()
     app.slider(key="joint_y0").set_value(2.0).run()
     changed = _data(app)
+    check_export_parameters("-0.8", "2")
     assert before != changed
     # Marginal density stays fixed while the conditional density changes.
     assert before[1][1] == changed[1][1]
@@ -89,6 +112,7 @@ def test_joint_controls_navigation_and_export(lang):
     app.button_group(key="language").set_value(other).run()
     assert app.session_state["active_lab"] == "joint"
     assert app.query_params["lab"] == "joint"
+    check_export_parameters("-0.8", "2")
     assert _data(app) == changed
     app.radio(key=f"nav_{other}").set_value("glossary").run()
     app.radio(key=f"nav_{other}").set_value("joint").run()

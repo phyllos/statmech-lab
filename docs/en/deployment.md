@@ -48,7 +48,7 @@ uv run --locked ruff format --check .
 uv run --locked pytest -q
 ```
 
-After deployment, follow the [manual UI checklist](architecture.md#manual-ui-checks): visit all four experiments and the glossary, switch languages, change parameters, resample, retain a comparison and download a chart. Check narrow/short screens and SVG titles as well. Verify sharing from a separate signed-out browser session if the app should be public. Passing local tests does not establish cloud or visual correctness.
+After deployment, follow the [manual UI checklist](architecture.md#manual-ui-checks): visit every experiment and the glossary, switch languages and change parameters. Exercise resampling and saved comparisons where available, and download charts with their current parameter labels. Check narrow/short screens and SVG titles as well. Verify sharing from a separate signed-out browser session if the app should be public. Passing local tests does not establish cloud or visual correctness.
 
 Community Cloud updates when the deployed GitHub branch changes. Commit reviewed changes and push `main` to update the app; local edits alone have no effect. Dependency changes trigger environment installation. If a deployed change fails, revert the relevant commit and push the revert rather than rewriting shared history.
 

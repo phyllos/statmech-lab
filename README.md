@@ -2,7 +2,7 @@
 
 English · [简体中文](docs/zh-CN/README.md)
 
-An interactive concept lab for statistical physics, for local use or web hosting. Linked plots, reproducible sampling, and mathematical explanations connect probability distributions, fluctuations, and microstate counting.
+An interactive statistical physics lab connecting probability, microstate counting, ensembles and thermodynamic stability. Linked plots, reproducible sampling and optional derivations support exploration in English and Simplified Chinese. The app runs locally or on a web server.
 
 ## Run locally
 
@@ -25,38 +25,33 @@ Use repository **`phyllos/statmech-lab`**, branch **`main`**, entrypoint **`app.
 
 See the [deployment guide](docs/en/deployment.md) for setup, verification, sharing and updates. The Dockerfile supports deployment on other container hosts.
 
-## Explore
+## Experiments
 
-1. **Distributions & boxplots**: PDFs, CDFs, interval probabilities, sample histograms, quantiles, fences, and observed whisker endpoints.
-2. **Skewness, kurtosis & tails**: tail probabilities, population moment existence, and fluctuations in sample kurtosis.
-3. **LLN & CLT**: individual observations, repeated sample means, standardization, and cases outside the classical CLT assumptions.
-4. **Microstates & entropy**: two-level configurations at fixed excitation count, multiplicity, entropy, and large-N inverse temperature.
-5. **Joint & conditional probability**: vary correlation and the observed Y value to connect a Gaussian density slice, the marginal, and the normalized conditional density.
-6. **Thermal contact & energy sharing**: compare exact split probabilities, multiplicities and entropies for two two-level systems at fixed total energy, including equilibrium fluctuations.
-7. **Reservoir & canonical ensemble**: enlarge a finite two-level reservoir and compare exact energy-sharing probabilities with a mean-matched canonical law, including energy fluctuations and total variation.
-8. **Temperature & heat capacity**: vary temperature in the canonical two-level model; link level populations, mean energy and heat capacity, with the energy-fluctuation relation explained on demand.
-9. **Ideal gas & speed**: vary temperature on fixed axes to compare a Gaussian velocity component with the three-dimensional Maxwell speed distribution; explore the spherical-shell factor on demand.
-10. **Free energy & stability**: vary temperature in a uniform quartic Landau model; connect global minima to equilibrium branches and optionally tilt the potential with a field to explore metastability.
+| No. | Experiment | Main concepts |
+| --- | --- | --- |
+| 01 | Distributions & boxplots | PDF/CDF, interval probability, quantiles and sample summaries |
+| 02 | Skewness, kurtosis & tails | Tail probabilities, moment existence and sample fluctuations |
+| 03 | LLN & CLT | Sample means, standardization and conditions for convergence |
+| 04 | Microstates & entropy | Two-level configurations, multiplicity, entropy and inverse temperature |
+| 05 | Joint & conditional probability | Gaussian correlation, marginalization and conditioning |
+| 06 | Thermal contact & energy sharing | Exact energy-sharing probabilities, entropy and equilibrium fluctuations |
+| 07 | Reservoir & canonical ensemble | Finite-reservoir probabilities and the canonical approximation |
+| 08 | Temperature & heat capacity | Two-level populations, thermal response and energy fluctuations |
+| 09 | Ideal gas & speed | Gaussian velocity components and the Maxwell speed distribution |
+| 10 | Free energy & stability | Landau free-energy minima, equilibrium branches and metastability |
 
-The interface starts in English. Use **English / 中文** below the sidebar brand to switch languages while keeping the current experiment, parameters, and sampled data.
+Experiments 01–03 and 05 develop probability concepts. Experiments 04 and 06–08 follow the same two-level model from fixed energy to thermal contact and temperature response. Experiment 09 applies probability to gas velocities; experiment 10 provides a separate introduction to free energy and stability.
 
-Display settings and comparisons are available through compact controls; the CLT walkthrough is collapsed by default. Optional interactions in the distribution and CLT experiments let you link the interval across plots, retain a result for comparison, and replay the CLT sampling process step by step. See [interaction guide](docs/en/interactions.md).
+## Using the lab
 
-The sidebar **Glossary** provides 44 bilingual terms. Search in either language, by abbreviation or symbol, and filter by topic. Each experiment also ends with a collapsible list of relevant terms. Opening the glossary and returning to an experiment preserves its settings and sample.
+- **Language and navigation:** English is the default. Switch with **English / 中文** in the sidebar; experiment parameters, samples and display settings are preserved within the session.
+- **Controls and explanations:** Parameters are expanded by default. Display options, saved comparisons and derivations are available where relevant; deterministic experiments have no resampling action.
+- **Glossary:** Search bilingual terms by name, abbreviation or symbol, or filter by topic. Each experiment also provides related terms.
+- **Charts and exports:** Hover for values, drag to zoom and double-click to reset. The toolbar exports SVG; download buttons produce standalone interactive HTML charts. These files capture the current chart, not the full application's controls.
 
-Direct links accept `?lab=distributions`, `?lab=tails`, `?lab=clt`, `?lab=entropy`, `?lab=joint`, `?lab=thermal`, `?lab=canonical`, `?lab=response`, `?lab=gas`, `?lab=landau`, or `?lab=glossary`. Add `&lang=zh` or `&lang=en` to select a language. For example: `?lab=glossary&lang=zh`.
+See the [interaction guide](docs/en/interactions.md) for linked selections, comparisons and suggested explorations, and [model notes](docs/en/sources.md) for assumptions and derivations.
 
-Hover for values, drag to zoom, and double-click to reset. The toolbar supports panning and SVG export; each experiment also offers a standalone interactive HTML chart.
-
-The joint Gaussian experiment fixes both marginals at N(0, 1) and generates no random samples. Plot ranges stay fixed; zero correlation implies independence here because the variables are jointly Gaussian.
-
-The thermal-contact experiment uses equal energy gaps and negligible coupling energy, with equal weights for combined microstates at fixed total energy. Its entropy curves fix both subsystem energies; the entropy with only the total energy constrained is constant.
-
-The reservoir experiment compares both laws at p = q/(N_A + N_B), after rounding the target excitation count to the nearest integer, with halves rounded up. The canonical law retains its full support and uses βε = ln((1−p)/p); this mean-matched parameter is not an exact finite-system entropy derivative. The interface covers positive temperatures and the β = 0 limit.
-
-The temperature-response experiment assumes an ideal reservoir, fixed N and a fixed nondegenerate gap ε. Results are per unit and exact for independent units at any N. The zero slider setting denotes T → 0⁺; the smooth heat-capacity peak is not a phase transition.
-
-The Landau experiment uses the dimensionless potential f = (t−1)m²/2 + m⁴/4 − hm, with t = T/Tc. Both zero-field equilibrium minima are retained below Tc; the critical quartic minimum and spinodal stationary inflections are distinguished. The model assumes a uniform scalar order parameter and does not simulate spatial fluctuations, nucleation or hysteresis dynamics.
+Direct links use `?lab=<id>` and an optional `&lang=en` or `&lang=zh`. Experiment IDs are `distributions`, `tails`, `clt`, `entropy`, `joint`, `thermal`, `canonical`, `response`, `gas` and `landau`; the glossary uses `glossary`. For example: `?lab=thermal&lang=zh`.
 
 ## Reproducibility and conventions
 
@@ -77,13 +72,13 @@ app.py                 Application entry point and navigation
 i18n.py                Language selection and display text
 state.py               Session-local experiment persistence
 glossary.py            Bilingual terms and contextual quick references
-physics.py             Pure numerical model, without UI or file effects
+physics.py             Pure numerical models, without UI or file effects
 distribution_ui.py     Shared distribution names, parameters and descriptions
 plot_theme.py          Semantic colors shared by interactive and static plots
 shared.py              Shared chart styling and UI components
-styles/app.css         Responsive layout and visual styles
+styles/                Responsive layout, visual styles and chart-width observer
 interactions.py        Comparison controls and sampling walkthrough
-labs/                  Seven experiment pages
+labs/                  Experiment pages
 export_figures.py      Batch scientific figure export
 docs/en/               English teaching notes, architecture and deployment guides
 docs/zh-CN/            Simplified Chinese documentation
@@ -103,9 +98,9 @@ Static PNG and SVG figures are written to `figs/`. The exporter and app share nu
 
 ## Scope and sources
 
-The lab covers probability distributions, sampling, limit theorems, two-level entropy and finite-system thermal contact. It also covers the canonical limit of a two-level reservoir and its temperature response. Ideal-gas velocity distributions and a uniform Landau stability model are included; gas mixing entropy, the Gibbs correction and Liouville evolution remain outside its current scope.
+The experiments focus on equilibrium probability models and thermodynamic concepts. They do not simulate microscopic time evolution. The Landau model assumes a uniform order parameter; spatial fluctuations, nucleation and hysteresis dynamics are outside its scope.
 
-Examples build on PHYS 515 teaching and discussions of PDF/CDF, quantiles, median/IQR alignment, survival functions, Pareto distributions and boxplots. See [source notes](docs/en/sources.md).
+The examples build on PHYS 515 teaching and discussions. See [content and sources](docs/en/sources.md) for model assumptions, mathematical conventions and references.
 
 ## Version control
 
