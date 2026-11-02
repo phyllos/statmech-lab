@@ -4,6 +4,8 @@ English · [简体中文](docs/zh-CN/CHANGELOG.md) · [Project overview](README.
 
 ## Unreleased
 
+- Add experiment 10 linking quartic Landau free-energy minima and equilibrium order parameters, with optional field control, explicit critical/spinodal handling, bilingual terms and self-contained chart exports.
+
 - Add experiment 09 comparing a Gaussian velocity component with Maxwell speed through one temperature control, with fixed reference units, spherical-shell derivations, bilingual terms and chart exports.
 
 - Add experiment 08 linking two-level populations, mean energy and heat capacity through one temperature control, with a zero-temperature limit, fluctuation derivation, bilingual reference terms and chart exports.

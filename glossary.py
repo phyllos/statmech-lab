@@ -39,6 +39,43 @@ def _term(
 
 TERMS = [
     _term(
+        "order_parameter",
+        "Order parameter",
+        "序参量",
+        "m",
+        "A macroscopic quantity used to distinguish phases. In the symmetric scalar Landau model, zero-field ordered equilibria have nonzero m.",
+        "用来区分不同相的宏观量。在对称标量 Landau 模型中，零外场的有序平衡态具有非零 m。",
+        ["landau"],
+        note_en="The scaled m in this model is not a bounded microscopic spin. Both symmetry-related equilibrium branches are retained below Tc.",
+        note_zh="此模型的无量纲 m 不是有界的微观自旋；低于 Tc 时保留两支对称相关的平衡解。",
+        aliases=["symmetry breaking", "对称性破缺"],
+    ),
+    _term(
+        "landau_potential",
+        "Landau free energy",
+        "Landau 自由能",
+        "f(m; t, h)",
+        "A phenomenological potential for an order parameter at fixed external conditions. Equilibrium is found by its global minimum, not merely by a stationary point.",
+        "在固定外部条件下描述序参量的现象学势；平衡态由全局极小值确定，不能只要求驻点条件。",
+        ["landau"],
+        note_en="Here t = T/Tc and all coefficients are scaled. At t = 1, h = 0, the curvature vanishes but the quartic term still stabilizes m = 0.",
+        note_zh="这里 t = T/Tc，系数已无量纲化。t = 1、h = 0 时曲率为零，但四次项仍稳定 m = 0。",
+        formula=r"f=\tfrac12(t-1)m^2+\tfrac14m^4-hm",
+        aliases=["curvature", "stationary point", "stability", "曲率", "驻点", "稳定性"],
+    ),
+    _term(
+        "metastability",
+        "Metastability",
+        "亚稳态",
+        "f′ = 0, f″ > 0",
+        "A local minimum separated by a barrier from a lower free-energy state. It is locally stable but is not the global equilibrium minimum.",
+        "与更低自由能状态之间隔有势垒的局部极小值；它局部稳定，但不是全局平衡最低点。",
+        ["landau"],
+        note_en="The uniform quartic model locates the spinodal where a minimum and maximum merge. It does not determine nucleation rates or lifetimes.",
+        note_zh="均匀四次模型可确定极小值与极大值合并的亚稳极限，但不确定成核速率或亚稳态寿命。",
+        aliases=["spinodal", "亚稳极限", "势垒"],
+    ),
+    _term(
         "velocity_component",
         "Velocity component",
         "速度分量",
@@ -554,6 +591,7 @@ TERMS = [
 
 
 RELATED_IDS = {
+    "landau": ["order_parameter", "landau_potential", "metastability"],
     "gas": ["velocity_component", "maxwell_speed", "canonical_ensemble", "boltzmann_factor"],
     "response": ["heat_capacity", "energy_fluctuation", "canonical_ensemble", "boltzmann_factor"],
     "canonical": [
@@ -589,6 +627,7 @@ RELATED_IDS = {
 _BY_ID = {term["id"]: term for term in TERMS}
 _CATEGORIES = {
     "all": ("All topics", "全部主题"),
+    "landau": ("Free energy & stability", "自由能与稳定性"),
     "gas": ("Ideal gas & speed", "理想气体与速率"),
     "response": ("Temperature & heat capacity", "温度与热容量"),
     "canonical": ("Reservoir & canonical ensemble", "热库与正则系综"),

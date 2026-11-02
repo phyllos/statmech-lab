@@ -11,9 +11,93 @@ from __future__ import annotations
 import warnings
 
 import numpy as np
-from scipy import special, stats
+from scipy import optimize, special, stats
 
 DISTRIBUTIONS = ("normal", "uniform", "exponential", "lognormal", "pareto", "student_t", "cauchy")
+
+
+def _landau_parameters(temperature_ratio, field):
+    for name, value in (("temperature_ratio", temperature_ratio), ("field", field)):
+        if (
+            isinstance(value, (bool, np.bool_))
+            or not isinstance(value, (int, float, np.integer, np.floating))
+            or not np.isfinite(value)
+        ):
+            raise ValueError(f"{name} must be a finite scalar")
+    if temperature_ratio <= 0:
+        raise ValueError("temperature_ratio must be positive")
+    return float(temperature_ratio) - 1, float(field)
+
+
+def landau_free_energy(m, temperature_ratio, field=0.0):
+    """Dimensionless uniform quartic potential, up to an m-independent offset.
+
+    t = T/T_c, f = (t-1)m²/2 + m⁴/4 - h m. Coefficients and order-parameter
+    units are scaled to one; m is not a bounded microscopic magnetization.
+    """
+    r, h = _landau_parameters(temperature_ratio, field)
+    m = np.asarray(m, dtype=float)
+    if np.any(~np.isfinite(m)):
+        raise ValueError("m must be finite")
+    return r * m**2 / 2 + m**4 / 4 - h * m
+
+
+def landau_stationary(temperature_ratio, field=0.0):
+    """All distinct real stationary points, including critical/spinodal cases.
+
+    Bracket the cubic on its monotone intervals instead of discarding small
+    imaginary parts from generic polynomial roots at a double root. A zero
+    curvature at m=r=h=0 is a quartic minimum; a double cubic root elsewhere
+    is a stationary inflection (spinodal), not a metastable minimum.
+    """
+    r, h = _landau_parameters(temperature_ratio, field)
+    if h == 0:
+        m = np.array([-np.sqrt(-r), 0.0, np.sqrt(-r)]) if r < 0 else np.array([0.0])
+    else:
+        bound = 1 + np.sqrt(abs(r)) + np.cbrt(abs(h))
+        turns = [-np.sqrt(-r / 3), np.sqrt(-r / 3)] if r < 0 else []
+        cuts = [-bound, *turns, bound]
+
+        def derivative(x):
+            return x**3 + r * x - h
+
+        values = [derivative(x) for x in cuts]
+        roots = []
+        zeros = []
+        for x, value in zip(cuts, values, strict=True):
+            tol = 32 * np.finfo(float).eps * (abs(x**3) + abs(r * x) + abs(h))
+            zeros.append(abs(value) <= tol)
+            if zeros[-1]:
+                roots.append(x)
+        for i in range(len(cuts) - 1):
+            if not zeros[i] and not zeros[i + 1] and np.sign(values[i]) != np.sign(values[i + 1]):
+                roots.append(optimize.brentq(derivative, cuts[i], cuts[i + 1], xtol=1e-14))
+        m = np.array(sorted(roots))
+    energy = landau_free_energy(m, temperature_ratio, field)
+    curvature = r + 3 * m**2
+    tolerance = 64 * np.finfo(float).eps * (abs(r) + 3 * m**2)
+    kinds = []
+    for index, (second, tol) in enumerate(zip(curvature, tolerance, strict=True)):
+        if r == 0 and h == 0:
+            kind = "critical"
+        elif abs(second) <= tol:
+            kind = "spinodal"
+        elif second < 0:
+            kind = "unstable"
+        elif h == 0 or (h > 0 and index == len(m) - 1) or (h < 0 and index == 0):
+            # For this symmetric quartic, nonzero h selects the same-sign well.
+            # Avoid declaring tiny nonzero fields degenerate via energy tolerances.
+            kind = "stable"
+        else:
+            kind = "metastable"
+        kinds.append(kind)
+    return {
+        "m": m,
+        "free_energy": energy,
+        "curvature": curvature,
+        "kind": tuple(kinds),
+        "equilibrium": m[[kind in {"stable", "critical"} for kind in kinds]],
+    }
 
 
 def ideal_gas_speeds(temperature_ratio: float) -> dict:

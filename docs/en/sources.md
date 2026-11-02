@@ -12,7 +12,9 @@ The project builds on PHYS 515 statistical physics teaching and conceptual discu
 
 The examples distinguish population quantities from sample statistics, connect different graphical representations and state the assumptions behind each conclusion. Interface explanations, numerical models and figure exports follow these teaching goals.
 
-The scope covers probability, sampling, two-level entropy and finite-system thermal contact. It also introduces the canonical limit and temperature response of two-level units; ideal-gas velocity distributions are included, while gas mixing entropy and the Gibbs correction remain outside the scope.
+The scope covers probability, sampling, two-level entropy and finite-system thermal contact. It also introduces the canonical limit and temperature response of two-level units; ideal-gas velocity distributions and a uniform Landau stability model are included, while gas mixing entropy and the Gibbs correction remain outside the scope.
+
+The Landau experiment follows the symmetry-based quartic expansion and mean-field limitations discussed in [David Tong, Statistical Physics, §5.4–5.5](https://www.damtp.cam.ac.uk/user/tong/statphys/statmechhtml/S5.html). Its coefficients are rescaled for an illustrative dimensionless model.
 
 ## Definitions and software references
 
@@ -41,3 +43,5 @@ For a system A coupled to a finite two-level reservoir B, the exact marginal is 
 For independent, nondegenerate two-level units coupled to an ideal reservoir, θ = kB T/ε and p = exp(−1/θ)/(1+exp(−1/θ)). The partition function is Z = (1+exp(−1/θ))^N, U/(Nε) = p and C/(NkB) = p(1−p)/θ². These are exact canonical results, without Stirling's approximation. For T>0, Var(E) = kB T² C. At T→0⁺, U and C vanish; at high temperature, U/(Nε)→1/2 and Var(E)/(Nε²)→1/4 while C/(NkB)→0. The smooth two-level heat-capacity peak does not indicate a phase transition.
 
 For a three-dimensional classical ideal gas at rest in the canonical ensemble, each velocity component is Gaussian with variance σ² = kB T/m. Integrating over a velocity-space shell gives g(v) = √(2/π) v² σ⁻³ exp(−v²/(2σ²)), v≥0. Its mode, mean and RMS speed are √2 σ, √(8/π) σ and √3 σ. Speed is the magnitude of all three components, not |v_x|. Experiment 09 fixes v₀ = √(kB T₀/m) and varies T/T₀; plotted densities are normalized in v/v₀ over their full support, not the cropped view. The canonical law is not an exact finite-isolated-system marginal and is not derived from the CLT.
+
+For f(m;t,h) = (t−1)m²/2 + m⁴/4 − hm, stationary points satisfy m³ + (t−1)m − h = 0. At h=0, equilibrium is m=0 for t≥1 and m=±√(1−t) for t<1. At t=1 the quartic minimum has zero curvature; zero curvature alone is inconclusive. At t<1 the spinodal fields obey |h_sp| = 2(1−t)^(3/2)/(3√3); the merging stationary points are inflections with nonzero third derivative. Only global minima enter the equilibrium curve. This is a uniform mean-field potential, not a microscopic simulation or a model of relaxation.

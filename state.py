@@ -16,6 +16,7 @@ CONTROL_PREFIXES = (
     "canon_",
     "response_",
     "gas_",
+    "landau_",
 )
 
 
