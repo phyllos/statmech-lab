@@ -120,14 +120,20 @@ def render():
             joint,
             "joint_density",
             title=tr("01 / Select a slice", "01 / 选择一个切片"),
-            subtitle=tr("Joint density · line at Y = y₀", "联合密度 · 横线对应 Y = y₀"),
+            subtitle=tr(
+                f"ρ = {rho:.3g} · slice at Y = {y0:.3g}",
+                f"ρ = {rho:.3g} · 切片 Y = {y0:.3g}",
+            ),
         )
     with right:
         chart(
             comparison,
             "joint_conditional",
             title=tr("02 / Update the density", "02 / 更新概率密度"),
-            subtitle=tr("Normalize the slice to area 1", "将切片归一化，使曲线下面积为 1"),
+            subtitle=tr(
+                f"ρ = {rho:.3g} · Y = {y0:.3g} · area = 1",
+                f"ρ = {rho:.3g} · Y = {y0:.3g} · 面积 = 1",
+            ),
         )
     st.caption(
         tr(

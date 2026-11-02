@@ -53,6 +53,10 @@ def landau_stationary(temperature_ratio, field=0.0):
     r, h = _landau_parameters(temperature_ratio, field)
     if h == 0:
         m = np.array([-np.sqrt(-r), 0.0, np.sqrt(-r)]) if r < 0 else np.array([0.0])
+    elif r == 0:
+        # At critical temperature m³ = h. An absolute root tolerance can
+        # round a tiny nonzero solution to zero and misclassify its stability.
+        m = np.array([np.cbrt(h)])
     else:
         bound = 1 + np.sqrt(abs(r)) + np.cbrt(abs(h))
         turns = [-np.sqrt(-r / 3), np.sqrt(-r / 3)] if r < 0 else []

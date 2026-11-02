@@ -29,6 +29,20 @@ def test_zero_field_minima_critical_point_and_barrier():
 
 
 @pytest.mark.parametrize("sign", [-1, 1])
+@pytest.mark.parametrize("magnitude", [1e-300, 1e-45, 1e-40, 1e-20, 0.2])
+def test_critical_temperature_nonzero_field_has_a_stable_cubic_root(sign, magnitude):
+    h = sign * magnitude
+    data = landau_stationary(1.0, h)
+    assert data["kind"] == ("stable",)
+    assert len(data["m"]) == len(data["equilibrium"]) == 1
+    m = data["equilibrium"][0]
+    assert np.sign(m) == sign
+    assert m**3 / h == pytest.approx(1.0, rel=1e-14)
+    assert data["curvature"][0] > 0
+    assert np.all(np.isfinite(data["free_energy"]))
+
+
+@pytest.mark.parametrize("sign", [-1, 1])
 def test_spinodal_is_distinct_from_critical_minimum(sign):
     t = 0.75
     a = np.sqrt((1 - t) / 3)
