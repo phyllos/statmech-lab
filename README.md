@@ -36,14 +36,15 @@ See the [deployment guide](docs/en/deployment.md) for setup, verification, shari
 7. **Reservoir & canonical ensemble**: enlarge a finite two-level reservoir and compare exact energy-sharing probabilities with a mean-matched canonical law, including energy fluctuations and total variation.
 8. **Temperature & heat capacity**: vary temperature in the canonical two-level model; link level populations, mean energy and heat capacity, with the energy-fluctuation relation explained on demand.
 9. **Ideal gas & speed**: vary temperature on fixed axes to compare a Gaussian velocity component with the three-dimensional Maxwell speed distribution; explore the spherical-shell factor on demand.
+10. **Free energy & stability**: vary temperature in a uniform quartic Landau model; connect global minima to equilibrium branches and optionally tilt the potential with a field to explore metastability.
 
 The interface starts in English. Use **English / 中文** below the sidebar brand to switch languages while keeping the current experiment, parameters, and sampled data.
 
 Display settings and comparisons are available through compact controls; the CLT walkthrough is collapsed by default. Optional interactions in the distribution and CLT experiments let you link the interval across plots, retain a result for comparison, and replay the CLT sampling process step by step. See [interaction guide](docs/en/interactions.md).
 
-The sidebar **Glossary** provides 41 bilingual terms. Search in either language, by abbreviation or symbol, and filter by topic. Each experiment also ends with a collapsible list of relevant terms. Opening the glossary and returning to an experiment preserves its settings and sample.
+The sidebar **Glossary** provides 44 bilingual terms. Search in either language, by abbreviation or symbol, and filter by topic. Each experiment also ends with a collapsible list of relevant terms. Opening the glossary and returning to an experiment preserves its settings and sample.
 
-Direct links accept `?lab=distributions`, `?lab=tails`, `?lab=clt`, `?lab=entropy`, `?lab=joint`, `?lab=thermal`, `?lab=canonical`, `?lab=response`, `?lab=gas`, or `?lab=glossary`. Add `&lang=zh` or `&lang=en` to select a language. For example: `?lab=glossary&lang=zh`.
+Direct links accept `?lab=distributions`, `?lab=tails`, `?lab=clt`, `?lab=entropy`, `?lab=joint`, `?lab=thermal`, `?lab=canonical`, `?lab=response`, `?lab=gas`, `?lab=landau`, or `?lab=glossary`. Add `&lang=zh` or `&lang=en` to select a language. For example: `?lab=glossary&lang=zh`.
 
 Hover for values, drag to zoom, and double-click to reset. The toolbar supports panning and SVG export; each experiment also offers a standalone interactive HTML chart.
 
@@ -54,6 +55,8 @@ The thermal-contact experiment uses equal energy gaps and negligible coupling en
 The reservoir experiment compares both laws at p = q/(N_A + N_B), after rounding the target excitation count to the nearest integer, with halves rounded up. The canonical law retains its full support and uses βε = ln((1−p)/p); this mean-matched parameter is not an exact finite-system entropy derivative. The interface covers positive temperatures and the β = 0 limit.
 
 The temperature-response experiment assumes an ideal reservoir, fixed N and a fixed nondegenerate gap ε. Results are per unit and exact for independent units at any N. The zero slider setting denotes T → 0⁺; the smooth heat-capacity peak is not a phase transition.
+
+The Landau experiment uses the dimensionless potential f = (t−1)m²/2 + m⁴/4 − hm, with t = T/Tc. Both zero-field equilibrium minima are retained below Tc; the critical quartic minimum and spinodal stationary inflections are distinguished. The model assumes a uniform scalar order parameter and does not simulate spatial fluctuations, nucleation or hysteresis dynamics.
 
 ## Reproducibility and conventions
 
@@ -100,7 +103,7 @@ Static PNG and SVG figures are written to `figs/`. The exporter and app share nu
 
 ## Scope and sources
 
-The lab covers probability distributions, sampling, limit theorems, two-level entropy and finite-system thermal contact. It also covers the canonical limit of a two-level reservoir and its temperature response. Ideal-gas velocity distributions are included; gas mixing entropy, the Gibbs correction and Liouville evolution remain outside its current scope.
+The lab covers probability distributions, sampling, limit theorems, two-level entropy and finite-system thermal contact. It also covers the canonical limit of a two-level reservoir and its temperature response. Ideal-gas velocity distributions and a uniform Landau stability model are included; gas mixing entropy, the Gibbs correction and Liouville evolution remain outside its current scope.
 
 Examples build on PHYS 515 teaching and discussions of PDF/CDF, quantiles, median/IQR alignment, survival functions, Pareto distributions and boxplots. See [source notes](docs/en/sources.md).
 

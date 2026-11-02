@@ -21,6 +21,7 @@ LABS = {
     "canonical": ("07  Reservoir & canonical ensemble", "07  热库与正则系综"),
     "response": ("08  Temperature & heat capacity", "08  温度与热容量"),
     "gas": ("09  Ideal gas & speed", "09  理想气体与速率"),
+    "landau": ("10  Free energy & stability", "10  自由能与稳定性"),
     "glossary": ("Reference · Glossary", "参考 · 术语表"),
 }
 
@@ -142,6 +143,8 @@ elif st.session_state.active_lab == "response":
     from labs.response import render
 elif st.session_state.active_lab == "gas":
     from labs.gas import render
+elif st.session_state.active_lab == "landau":
+    from labs.landau import render
 else:
     from glossary import render
 
