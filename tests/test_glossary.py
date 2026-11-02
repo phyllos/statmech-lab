@@ -1,14 +1,12 @@
 """Content integrity and search contracts for the bilingual reference."""
 
 from copy import deepcopy
-from pathlib import Path
 
 import pytest
 
+from experiments import EXPERIMENT_BY_ID
 from glossary import _CATEGORIES, search_terms
 from glossary_data import RELATED_IDS, TERMS
-
-LABS = Path(__file__).resolve().parents[1] / "labs"
 
 
 def test_entries_have_unique_ids_and_complete_bilingual_text():
@@ -26,9 +24,8 @@ def test_entries_have_unique_ids_and_complete_bilingual_text():
 def test_topic_membership_and_curated_references_are_valid():
     topics = set(_CATEGORIES) - {"all"}
     by_id = {term["id"]: term for term in TERMS}
-    assert set(RELATED_IDS) == topics
+    assert set(RELATED_IDS) == topics == set(EXPERIMENT_BY_ID)
     for topic in topics:
-        assert (LABS / f"{topic}.py").is_file(), topic
         assert any(topic in term["related_lab"] for term in TERMS), topic
     for term in TERMS:
         membership = term["related_lab"]

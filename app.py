@@ -4,6 +4,7 @@ from html import escape
 
 import streamlit as st
 
+from experiments import DEFAULT_EXPERIMENT, PAGE_LABELS, REFERENCE_ID, load_renderer
 from i18n import LANGUAGES, language, tr
 from shared import STYLE
 from state import remember_controls, restore_controls
@@ -11,33 +12,19 @@ from state import remember_controls, restore_controls
 st.set_page_config(page_title="StatMech Lab · PHYS 515", page_icon="∿", layout="wide")
 st.markdown(STYLE, unsafe_allow_html=True)
 
-LABS = {
-    "distributions": ("01  Distributions & boxplots", "01  分布与箱型图"),
-    "tails": ("02  Shape & tails", "02  偏度、峰度与尾部"),
-    "clt": ("03  LLN & CLT", "03  大数定律与 CLT"),
-    "entropy": ("04  Microstates & entropy", "04  微观态与熵"),
-    "joint": ("05  Joint & conditional probability", "05  联合与条件概率"),
-    "thermal": ("06  Thermal contact", "06  热接触与能量分配"),
-    "canonical": ("07  Reservoir & canonical ensemble", "07  热库与正则系综"),
-    "response": ("08  Temperature & heat capacity", "08  温度与热容量"),
-    "gas": ("09  Ideal gas & speed", "09  理想气体与速率"),
-    "landau": ("10  Free energy & stability", "10  自由能与稳定性"),
-    "glossary": ("Reference · Glossary", "参考 · 术语表"),
-}
-
 if "language" not in st.session_state:
     requested = st.query_params.get("lang", "en")
     st.session_state.language = requested if requested in LANGUAGES else "en"
 if "active_lab" not in st.session_state:
-    requested = st.query_params.get("lab", "distributions")
-    st.session_state.active_lab = requested if requested in LABS else "distributions"
+    requested = st.query_params.get("lab", DEFAULT_EXPERIMENT)
+    st.session_state.active_lab = requested if requested in PAGE_LABELS else DEFAULT_EXPERIMENT
 restore_controls()
-lab_labels = {key: tr(*names) for key, names in LABS.items()}
+lab_labels = {key: tr(*names) for key, names in PAGE_LABELS.items()}
 
 
 def select_lab():
     selected = st.session_state.get(f"nav_{language()}")
-    if selected in LABS:
+    if selected in PAGE_LABELS:
         st.session_state.active_lab = selected
     sync_navigation()
 
@@ -46,8 +33,8 @@ def sync_navigation():
     remember_controls()
     st.session_state.language = language()
     st.query_params["lang"] = language()
-    active = st.session_state.get("active_lab", "distributions")
-    st.session_state.active_lab = active if active in LABS else "distributions"
+    active = st.session_state.get("active_lab", DEFAULT_EXPERIMENT)
+    st.session_state.active_lab = active if active in PAGE_LABELS else DEFAULT_EXPERIMENT
     st.query_params["lab"] = st.session_state.active_lab
 
 
@@ -76,8 +63,8 @@ with st.sidebar:
     # The canonical lab id lives in the non-widget key "active_lab".
     st.radio(
         tr("Explore", "实验目录"),
-        options=list(LABS),
-        index=list(LABS).index(st.session_state.active_lab),
+        options=list(PAGE_LABELS),
+        index=list(PAGE_LABELS).index(st.session_state.active_lab),
         format_func=lab_labels.get,
         key=f"nav_{language()}",
         on_change=select_lab,
@@ -125,33 +112,12 @@ with st.sidebar:
         unsafe_allow_html=True,
     )
 
-if st.session_state.active_lab == "distributions":
-    from labs.distributions import render
-elif st.session_state.active_lab == "tails":
-    from labs.tails import render
-elif st.session_state.active_lab == "clt":
-    from labs.clt import render
-elif st.session_state.active_lab == "entropy":
-    from labs.entropy import render
-elif st.session_state.active_lab == "joint":
-    from labs.joint import render
-elif st.session_state.active_lab == "thermal":
-    from labs.thermal import render
-elif st.session_state.active_lab == "canonical":
-    from labs.canonical import render
-elif st.session_state.active_lab == "response":
-    from labs.response import render
-elif st.session_state.active_lab == "gas":
-    from labs.gas import render
-elif st.session_state.active_lab == "landau":
-    from labs.landau import render
-else:
-    from glossary import render
+render = load_renderer(st.session_state.active_lab)
 
 # Keep each control bar inside its experiment; shared reference material follows it.
 with st.container(key=f"workspace_{st.session_state.active_lab}"):
     render()
-if st.session_state.active_lab != "glossary":
+if st.session_state.active_lab != REFERENCE_ID:
     from glossary import render_related
 
     render_related(st.session_state.active_lab)

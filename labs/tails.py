@@ -6,6 +6,7 @@ import streamlit as st
 from scipy import stats
 
 from distribution_ui import distribution_label
+from experiments import EXPERIMENT_BY_ID
 from i18n import language, tr
 from physics import make_distribution, population_moments
 from shared import COLORS, chart, control_panel, download_figure, header, metric_row
@@ -362,7 +363,7 @@ def _render_derivation(name, shape, outside_shape, seed):
 
 def render():
     header(
-        "02",
+        EXPERIMENT_BY_ID["tails"].number,
         tr("Skewness, kurtosis & tails", "偏度、峰度与尾部"),
         tr(
             "Shape, moments, and tail decay answer different questions. Explore their connections using a reproducible sample.",

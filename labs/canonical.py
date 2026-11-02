@@ -4,6 +4,7 @@ import numpy as np
 import plotly.graph_objects as go
 import streamlit as st
 
+from experiments import EXPERIMENT_BY_ID
 from i18n import tr
 from physics import canonical_comparison
 from plot_theme import COLORS
@@ -101,7 +102,7 @@ def _figure(data):
 
 def render():
     header(
-        7,
+        EXPERIMENT_BY_ID["canonical"].number,
         tr("From a reservoir to the canonical ensemble", "从有限热库到正则系综"),
         tr(
             "How large must a reservoir be before the Boltzmann approximation works well?",

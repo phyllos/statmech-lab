@@ -4,6 +4,7 @@ import numpy as np
 import plotly.graph_objects as go
 import streamlit as st
 
+from experiments import EXPERIMENT_BY_ID
 from i18n import tr
 from physics import ideal_gas_speeds
 from plot_theme import COLORS
@@ -86,7 +87,7 @@ def _figures(data):
 
 def render():
     header(
-        9,
+        EXPERIMENT_BY_ID["gas"].number,
         tr("Ideal gas: components & speed", "理想气体：速度分量与速率"),
         tr(
             "A velocity component peaks at zero. Why does the speed peak elsewhere?",

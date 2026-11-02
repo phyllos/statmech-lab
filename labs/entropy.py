@@ -7,6 +7,7 @@ import plotly.graph_objects as go
 import streamlit as st
 from scipy.special import xlogy
 
+from experiments import EXPERIMENT_BY_ID
 from i18n import tr
 from physics import sample_microstate, two_level
 from shared import COLORS, chart, control_panel, download_figure, header, insight, metric_row
@@ -326,7 +327,7 @@ def _render_derivation(n, q):
 
 def render():
     header(
-        "04",
+        EXPERIMENT_BY_ID["entropy"].number,
         tr("Microstates & entropy", "微观态与熵"),
         tr(
             "How many distinct microscopic arrangements can realize the same total energy?",

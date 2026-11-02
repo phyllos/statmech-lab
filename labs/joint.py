@@ -4,6 +4,7 @@ import numpy as np
 import plotly.graph_objects as go
 import streamlit as st
 
+from experiments import EXPERIMENT_BY_ID
 from i18n import tr
 from physics import gaussian_conditioning
 from plot_theme import COLORS
@@ -104,7 +105,7 @@ def _figures(model, y0):
 
 def render():
     header(
-        5,
+        EXPERIMENT_BY_ID["joint"].number,
         tr("Joint & conditional probability", "联合与条件概率"),
         tr(
             "What does knowing Y tell us about X? Both marginals stay N(0, 1).",

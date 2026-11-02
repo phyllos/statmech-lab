@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 import streamlit as st
 from plotly.subplots import make_subplots
 
+from experiments import EXPERIMENT_BY_ID
 from i18n import tr
 from physics import two_level_response
 from plot_theme import COLORS
@@ -105,7 +106,7 @@ def _response_figure(theta, data):
 
 def render():
     header(
-        8,
+        EXPERIMENT_BY_ID["response"].number,
         tr("Temperature, energy & heat capacity", "温度、能量与热容量"),
         tr(
             "Energy rises with temperature. Why does heat capacity rise, then fall?",

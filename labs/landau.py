@@ -4,6 +4,7 @@ import numpy as np
 import plotly.graph_objects as go
 import streamlit as st
 
+from experiments import EXPERIMENT_BY_ID
 from i18n import tr
 from physics import landau_free_energy, landau_stationary
 from plot_theme import COLORS
@@ -158,7 +159,7 @@ def _observation(temperature, field, data):
 
 def render():
     header(
-        10,
+        EXPERIMENT_BY_ID["landau"].number,
         tr("Free energy & stability", "自由能与稳定性"),
         tr(
             "Is every stationary point a stable equilibrium?",
