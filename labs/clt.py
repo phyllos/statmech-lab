@@ -1,5 +1,7 @@
 """Independent sampling experiments: LLN, sample means, and the classical CLT."""
 
+from dataclasses import dataclass
+
 import numpy as np
 import plotly.graph_objects as go
 import streamlit as st
@@ -29,22 +31,34 @@ def _experiment(name, shape, n, repetitions, seed):
     return clt_experiment(name, shape, n, repetitions, seed, include_first_group=True)
 
 
-def render():
+@dataclass(frozen=True)
+class _MeanView:
+    """Displayed values and ranges, also used by the normalization notes."""
+
+    standardized: bool
+    values: np.ndarray
+    previous_values: np.ndarray | None
+    bin_bounds: tuple[float, float]
+    bounds: tuple[float, float]
+
+    @property
+    def outside(self):
+        lo, hi = self.bounds
+        return int(np.sum((self.values < lo) | (self.values > hi)))
+
+    @property
+    def unbinned(self):
+        lo, hi = self.bin_bounds
+        return int(np.sum((self.values < lo) | (self.values > hi)))
+
+
+def _controls():
     initialize_controls(
         clt_n=30,
         clt_repetitions=2000,
         clt_alpha=3.0,
         clt_view="means",
     )
-    header(
-        "03",
-        tr("Large numbers & the CLT", "大数定律与 CLT"),
-        tr(
-            "Individual observations can be irregular. What happens when we average independent observations?",
-            "一次观测可以很不规则。把独立观测取平均后，会发生什么？",
-        ),
-    )
-
     # Migrate old translated option values once; internal values are language-independent.
     old_distribution = st.session_state.get("clt_distribution")
     if old_distribution in LEGACY_DISTRIBUTIONS:
@@ -96,13 +110,13 @@ def render():
             )
 
     seed = 51503 + st.session_state.get("clt_draw", 0)
-    result = _experiment(name, shape, n, repetitions, seed)
-    rv = make_distribution(name, shape)
-    mu, variance = result["population_mean"], result["population_variance"]
-    finite = result["finite_variance"]
-    means = np.asarray(result["means"])
-    sem = np.sqrt(variance / n) if finite else None
     settings = dict(name=name, shape=shape, n=n, repetitions=repetitions, seed=seed)
+
+    return settings, tools_row
+
+
+def _display_controls(settings, finite, tools_row):
+    lang, seed = language(), settings["seed"]
 
     def describe(saved):
         model = distribution_description(saved["name"], lang, shape=saved["shape"])
@@ -126,6 +140,11 @@ def render():
             )
             st.caption(tr(f"Random seed: {seed}", f"随机种子：{seed}"))
         reference = comparison_controls("clt", settings, describe, model_keys=("name", "shape"))
+
+    return mode, reference
+
+
+def _comparison_result(reference):
     previous_result = (
         _experiment(
             reference["name"],
@@ -138,6 +157,16 @@ def render():
         else None
     )
 
+    return previous_result
+
+
+def _render_metrics(settings, result):
+    name, shape = settings["name"], settings["shape"]
+    n, repetitions = settings["n"], settings["repetitions"]
+    mu, variance = result["population_mean"], result["population_variance"]
+    finite = result["finite_variance"]
+    means = np.asarray(result["means"])
+    sem = np.sqrt(variance / n) if finite else None
     if not finite and name == "pareto" and shape > 1:
         st.warning(
             tr(
@@ -183,6 +212,39 @@ def render():
         ]
     )
 
+
+def _population_figure(rv):
+    parent_lo, parent_hi = rv.ppf([0.005, 0.995])
+    xs = rv.ppf(np.linspace(0.005, 0.995, 1000))
+    fig = go.Figure(
+        go.Scatter(
+            x=xs,
+            y=rv.pdf(xs),
+            mode="lines",
+            name=tr("Population PDF", "总体 PDF"),
+            line=dict(color=COLORS["theory"], width=3),
+            fill="tozeroy",
+            fillcolor="rgba(8,126,139,.10)",
+        )
+    )
+    fig.update_layout(
+        height=330,
+        xaxis_title=tr("Single observation x", "单次观测 x"),
+        yaxis_title=tr("Probability density f(x)", "概率密度 f(x)"),
+        showlegend=False,
+    )
+    fig.update_xaxes(range=[parent_lo, parent_hi])
+
+    return fig, (parent_lo, parent_hi)
+
+
+def _means_figure(settings, result, previous_result, mode, parent_bounds):
+    name, n = settings["name"], settings["n"]
+    parent_lo, parent_hi = parent_bounds
+    mu, variance = result["population_mean"], result["population_variance"]
+    finite = result["finite_variance"]
+    means = np.asarray(result["means"])
+    sem = np.sqrt(variance / n) if finite else None
     standardized = finite and mode == "standardized"
     values = np.asarray(result["standardized"]) if standardized else means
     previous_values = (
@@ -191,29 +253,79 @@ def render():
         else None
     )
     x_label = "z = √n (x̄ − μ) / σ" if standardized else tr("Sample mean x̄", "样本均值 x̄")
-
-    left, right = st.columns(2)
-    with left:
-        parent_lo, parent_hi = rv.ppf([0.005, 0.995])
-        xs = rv.ppf(np.linspace(0.005, 0.995, 1000))
-        fig = go.Figure(
+    bounds = None
+    if previous_values is not None:
+        current_bounds = np.quantile(values, [0.005, 0.995])
+        saved_bounds = np.quantile(previous_values, [0.005, 0.995])
+        bounds = (
+            min(current_bounds[0], saved_bounds[0]),
+            max(current_bounds[1], saved_bounds[1]),
+        )
+    centers, density, widths, lo, hi = sample_histogram(values, bounds=bounds)
+    fig = go.Figure(
+        go.Bar(
+            x=centers,
+            y=density,
+            width=widths,
+            name=tr("Simulation", "抽样结果"),
+            marker_color=COLORS["sample"],
+            opacity=0.72,
+        )
+    )
+    if previous_values is not None:
+        old_centers, old_density, _, _, _ = sample_histogram(previous_values, bounds=(lo, hi))
+        fig.add_trace(
             go.Scatter(
-                x=xs,
-                y=rv.pdf(xs),
+                x=old_centers,
+                y=old_density,
                 mode="lines",
-                name=tr("Population PDF", "总体 PDF"),
-                line=dict(color=COLORS["theory"], width=3),
-                fill="tozeroy",
-                fillcolor="rgba(8,126,139,.10)",
+                name=tr("Saved means", "保留的均值"),
+                line=dict(color=COLORS["muted"], width=2, dash="dash", shape="hvh"),
             )
         )
-        fig.update_layout(
-            height=330,
-            xaxis_title=tr("Single observation x", "单次观测 x"),
-            yaxis_title=tr("Probability density f(x)", "概率密度 f(x)"),
-            showlegend=False,
+    xs = np.linspace(lo, hi, 500)
+    if finite:
+        approx = stats.norm.pdf(xs) if standardized else stats.norm.pdf(xs, loc=mu, scale=sem)
+        fig.add_trace(
+            go.Scatter(
+                x=xs,
+                y=approx,
+                mode="lines",
+                name=tr("Standard normal", "标准正态参照")
+                if standardized
+                else tr("Normal approximation", "正态近似"),
+                line=dict(color=COLORS["theory"], width=2.5, dash="dash"),
+            )
         )
+    elif name == "cauchy":
+        fig.add_trace(
+            go.Scatter(
+                x=xs,
+                y=stats.cauchy.pdf(xs),
+                mode="lines",
+                name=tr("Exact: standard Cauchy", "精确：标准 Cauchy"),
+                line=dict(color=COLORS["theory"], width=2.5),
+            )
+        )
+    fig.update_layout(
+        height=330,
+        barmode="overlay",
+        bargap=0,
+        xaxis_title=x_label,
+        yaxis_title=tr("Probability density", "概率密度"),
+    )
+    if not standardized:
         fig.update_xaxes(range=[parent_lo, parent_hi])
+
+    view_bounds = (lo, hi) if standardized else parent_bounds
+    return fig, _MeanView(standardized, values, previous_values, (lo, hi), view_bounds)
+
+
+def _render_figures(rv, settings, result, previous_result, mode):
+    n, repetitions = settings["n"], settings["repetitions"]
+    left, right = st.columns(2)
+    with left:
+        fig, parent_bounds = _population_figure(rv)
         chart(
             fig,
             key="clt_population_chart",
@@ -227,69 +339,7 @@ def render():
             )
         )
     with right:
-        bounds = None
-        if previous_values is not None:
-            current_bounds = np.quantile(values, [0.005, 0.995])
-            saved_bounds = np.quantile(previous_values, [0.005, 0.995])
-            bounds = (
-                min(current_bounds[0], saved_bounds[0]),
-                max(current_bounds[1], saved_bounds[1]),
-            )
-        centers, density, widths, lo, hi = sample_histogram(values, bounds=bounds)
-        fig = go.Figure(
-            go.Bar(
-                x=centers,
-                y=density,
-                width=widths,
-                name=tr("Simulation", "抽样结果"),
-                marker_color=COLORS["sample"],
-                opacity=0.72,
-            )
-        )
-        if previous_values is not None:
-            old_centers, old_density, _, _, _ = sample_histogram(previous_values, bounds=(lo, hi))
-            fig.add_trace(
-                go.Scatter(
-                    x=old_centers,
-                    y=old_density,
-                    mode="lines",
-                    name=tr("Saved means", "保留的均值"),
-                    line=dict(color=COLORS["muted"], width=2, dash="dash", shape="hvh"),
-                )
-            )
-        xs = np.linspace(lo, hi, 500)
-        if finite:
-            approx = stats.norm.pdf(xs) if standardized else stats.norm.pdf(xs, loc=mu, scale=sem)
-            fig.add_trace(
-                go.Scatter(
-                    x=xs,
-                    y=approx,
-                    mode="lines",
-                    name=tr("Standard normal", "标准正态参照")
-                    if standardized
-                    else tr("Normal approximation", "正态近似"),
-                    line=dict(color=COLORS["theory"], width=2.5, dash="dash"),
-                )
-            )
-        elif name == "cauchy":
-            fig.add_trace(
-                go.Scatter(
-                    x=xs,
-                    y=stats.cauchy.pdf(xs),
-                    mode="lines",
-                    name=tr("Exact: standard Cauchy", "精确：标准 Cauchy"),
-                    line=dict(color=COLORS["theory"], width=2.5),
-                )
-            )
-        fig.update_layout(
-            height=330,
-            barmode="overlay",
-            bargap=0,
-            xaxis_title=x_label,
-            yaxis_title=tr("Probability density", "概率密度"),
-        )
-        if not standardized:
-            fig.update_xaxes(range=[parent_lo, parent_hi])
+        fig, view = _means_figure(settings, result, previous_result, mode, parent_bounds)
         chart(
             fig,
             key="clt_means_chart",
@@ -299,10 +349,7 @@ def render():
                 f"{repetitions:,} 组实验，每组包含 {n} 个观测",
             ),
         )
-        means_figure = fig
-        view_lo, view_hi = (lo, hi) if standardized else (parent_lo, parent_hi)
-        outside = int(np.sum((values < view_lo) | (values > view_hi)))
-        unbinned = int(np.sum((values < lo) | (values > hi)))
+        outside, unbinned = view.outside, view.unbinned
         st.caption(
             tr(
                 f"{outside:,} / {repetitions:,} means outside the view; {unbinned:,} outside the bins.",
@@ -310,6 +357,12 @@ def render():
             )
         )
 
+    return fig, view
+
+
+def _render_insight(settings, result, view):
+    finite, standardized = result["finite_variance"], view.standardized
+    name, shape = settings["name"], settings["shape"]
     if finite:
         explanation = tr(
             "Increasing n reduces the mean's theoretical fluctuations; the parent distribution stays the same.",
@@ -324,40 +377,46 @@ def render():
             explanation += tr(" Heavy tails can make convergence slow.", " 重尾可能使收敛较慢。")
         st.caption(explanation)
 
-    sampling_walkthrough(result, n=n, repetitions=repetitions, seed=seed, model=(name, shape))
 
+def _running_mean_figure(rv, mu, seed):
+    draws = rv.rvs(size=5000, random_state=np.random.default_rng(seed + 907))
+    ns = np.arange(1, len(draws) + 1)
+    running = np.cumsum(draws) / ns
+    fig = go.Figure(
+        go.Scatter(
+            x=ns,
+            y=running,
+            mode="lines",
+            name=tr("Running sample mean", "累积样本均值"),
+            line=dict(color=COLORS["sample"], width=1.8),
+        )
+    )
+    if np.isfinite(mu):
+        fig.add_trace(
+            go.Scatter(
+                x=[1, len(draws)],
+                y=[mu, mu],
+                mode="lines",
+                name=tr("Population mean μ", "总体均值 μ"),
+                line=dict(color=COLORS["theory"], dash="dash"),
+            )
+        )
+    fig.update_xaxes(hoverformat=",d")
+    fig.update_layout(
+        height=310,
+        xaxis=dict(title=tr("Cumulative observations n", "累计观测数 n"), type="log"),
+        yaxis_title=tr("Running mean x̄ₙ", "累积平均 x̄ₙ"),
+    )
+
+    return fig
+
+
+def _render_running_mean(rv, mu, seed):
     with st.expander(
         tr("The law of large numbers: one sample path", "再看大数定律：一条样本路径"),
         expanded=False,
     ):
-        draws = rv.rvs(size=5000, random_state=np.random.default_rng(seed + 907))
-        ns = np.arange(1, len(draws) + 1)
-        running = np.cumsum(draws) / ns
-        fig = go.Figure(
-            go.Scatter(
-                x=ns,
-                y=running,
-                mode="lines",
-                name=tr("Running sample mean", "累积样本均值"),
-                line=dict(color=COLORS["sample"], width=1.8),
-            )
-        )
-        if np.isfinite(mu):
-            fig.add_trace(
-                go.Scatter(
-                    x=[1, len(draws)],
-                    y=[mu, mu],
-                    mode="lines",
-                    name=tr("Population mean μ", "总体均值 μ"),
-                    line=dict(color=COLORS["theory"], dash="dash"),
-                )
-            )
-        fig.update_xaxes(hoverformat=",d")
-        fig.update_layout(
-            height=310,
-            xaxis=dict(title=tr("Cumulative observations n", "累计观测数 n"), type="log"),
-            yaxis_title=tr("Running mean x̄ₙ", "累积平均 x̄ₙ"),
-        )
+        fig = _running_mean_figure(rv, mu, seed)
         chart(fig, key="clt_running_chart", title=tr("Running sample mean", "累积样本均值"))
         st.caption(
             tr(
@@ -366,6 +425,12 @@ def render():
             )
         )
 
+
+def _render_derivation(view, repetitions):
+    standardized, previous_values = view.standardized, view.previous_values
+    lo, hi = view.bin_bounds
+    view_lo, view_hi = view.bounds
+    outside, unbinned = view.outside, view.unbinned
     with st.expander(
         tr("Mathematics · three random quantities, two theorems", "数学说明 · 三种随机量，两个定理")
     ):
@@ -434,4 +499,33 @@ def render():
                 "大数定律讨论均值的位置，CLT 讨论其涨落的尺度与形状。原始观测 $X_i$ 的分布不会因为 n 增大而变成正态。",
             )
         )
+
+
+def render():
+    header(
+        "03",
+        tr("Large numbers & the CLT", "大数定律与 CLT"),
+        tr(
+            "Individual observations can be irregular. What happens when we average independent observations?",
+            "一次观测可以很不规则。把独立观测取平均后，会发生什么？",
+        ),
+    )
+    settings, tools_row = _controls()
+    result = _experiment(**settings)
+    rv = make_distribution(settings["name"], settings["shape"])
+    mode, reference = _display_controls(settings, result["finite_variance"], tools_row)
+    previous_result = _comparison_result(reference)
+
+    _render_metrics(settings, result)
+    means_figure, view = _render_figures(rv, settings, result, previous_result, mode)
+    _render_insight(settings, result, view)
+    sampling_walkthrough(
+        result,
+        n=settings["n"],
+        repetitions=settings["repetitions"],
+        seed=settings["seed"],
+        model=(settings["name"], settings["shape"]),
+    )
+    _render_running_mean(rv, result["population_mean"], settings["seed"])
+    _render_derivation(view, settings["repetitions"])
     download_figure(means_figure, "clt_sample_means")
