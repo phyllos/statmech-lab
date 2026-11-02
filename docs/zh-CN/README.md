@@ -69,6 +69,7 @@ uv run --locked streamlit run app.py --server.address=127.0.0.1
 
 ```text
 app.py                 应用入口与导航
+experiments.py         共用实验元数据与页面加载
 physics.py             纯数值模型，无界面和文件副作用
 distribution_ui.py     共用分布名称、参数与说明
 plot_theme.py          交互与静态图共享语义配色
@@ -77,7 +78,8 @@ styles/                响应式布局、界面样式与图表宽度观察器
 interactions.py        实验对照和抽样演示
 i18n.py                语言切换与显示文本
 state.py               会话内实验状态保存
-glossary.py            双语术语表与相关术语速查
+glossary_data.py       双语术语内容与精选引用
+glossary.py            术语搜索与术语表展示
 labs/                  实验页面
 export_figures.py      批量导出科学图形
 docs/en/               英文教学来源、架构与部署说明

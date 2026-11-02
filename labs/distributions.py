@@ -7,6 +7,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from distribution_ui import distribution_description, distribution_help, distribution_label
+from experiments import EXPERIMENT_BY_ID
 from i18n import language, tr
 from interactions import comparison_controls
 from physics import histogram_density, make_distribution, sample_summary
@@ -689,7 +690,7 @@ def _render_derivation(summary, previous, view, outside, n, seed):
 
 def render():
     header(
-        "01",
+        EXPERIMENT_BY_ID["distributions"].number,
         tr("Distributions & boxplots", "分布与箱型图"),
         tr(
             "From probability areas to observed data: connect the PDF, CDF, and boxplot in one experiment.",

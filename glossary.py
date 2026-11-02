@@ -4,24 +4,29 @@ import unicodedata
 
 import streamlit as st
 
+from experiments import EXPERIMENT_BY_ID
 from glossary_data import RELATED_IDS as RELATED_IDS
 from glossary_data import TERMS as TERMS
 from i18n import language, tr
 from shared import header
 
 _BY_ID = {term["id"]: term for term in TERMS}
+# Reference topics have their own reading order, independent of navigation.
+_TOPIC_ORDER = (
+    "landau",
+    "gas",
+    "response",
+    "canonical",
+    "thermal",
+    "joint",
+    "distributions",
+    "tails",
+    "clt",
+    "entropy",
+)
 _CATEGORIES = {
     "all": ("All topics", "全部主题"),
-    "landau": ("Free energy & stability", "自由能与稳定性"),
-    "gas": ("Ideal gas & speed", "理想气体与速率"),
-    "response": ("Temperature & heat capacity", "温度与热容量"),
-    "canonical": ("Reservoir & canonical ensemble", "热库与正则系综"),
-    "thermal": ("Thermal contact", "热接触与能量分配"),
-    "joint": ("Joint & conditional probability", "联合与条件概率"),
-    "distributions": ("Distributions & boxplots", "分布与箱型图"),
-    "tails": ("Moments & tails", "矩与尾部"),
-    "clt": ("Sampling & limit theorems", "抽样与极限定理"),
-    "entropy": ("Microstates & entropy", "微观态与熵"),
+    **{topic: EXPERIMENT_BY_ID[topic].topic_labels for topic in _TOPIC_ORDER},
 }
 
 

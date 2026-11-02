@@ -7,6 +7,7 @@ The app keeps calculations independent from Streamlit. Pages compose those calcu
 | Module | Responsibility |
 | --- | --- |
 | `physics.py` | Pure models, local random generators, sample summaries and histogram normalization |
+| `experiments.py` | Experiment IDs, numbers, bilingual navigation/topic names, page modules and control prefixes |
 | `state.py` | Session-local control persistence across navigation |
 | `distribution_ui.py` | Shared bilingual distribution names, base parameters and descriptions |
 | `i18n.py` | Language choice and bilingual display text |
@@ -19,6 +20,8 @@ The app keeps calculations independent from Streamlit. Pages compose those calcu
 | `glossary.py` | Term search, filtering and reference presentation |
 | `app.py` | Navigation, session restoration and page composition |
 | `export_figures.py` | Batch Matplotlib exports using the same numerical models |
+
+The experiment registry is a small Python content module with no Streamlit dependency. Navigation, page loading and state prefixes derive from its entries. Only the selected page module is imported. The glossary remains an unnumbered reference page; topic order is independent of navigation, and topic names can differ where their scope requires it. Page-specific headings and teaching text stay in `labs/`.
 
 ## Data flow
 
@@ -42,7 +45,7 @@ Defaults are initialized once with `state.initialize_controls`; keyed widgets th
 
 - Put calculations in `physics.py` (or a dedicated pure module when a topic grows), with tests for known limits and assumptions.
 - Implement `render()` under `labs/`; use `chart`, `metric_row`, stable widget keys and `tr` for bilingual labels.
-- Add navigation and page selection in `app.py`; register any new control prefix in `state.py`, term content in `glossary_data.py` and the glossary topic label in `glossary.py`.
+- Register the experiment in `experiments.py`; use its number in the page header. Add term content and curated references in `glossary_data.py`, and place its ID in the glossary topic order in `glossary.py`.
 - Test model limits, language switching and glossary navigation, plus resampling where applicable. A sample estimate must never stand in for a nonexistent population moment.
 - Review the Docker runtime file list when adding top-level modules or assets.
 

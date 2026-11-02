@@ -8,6 +8,7 @@ import streamlit as st
 from scipy import stats
 
 from distribution_ui import distribution_description, distribution_label
+from experiments import EXPERIMENT_BY_ID
 from i18n import language, tr
 from interactions import comparison_controls, sampling_walkthrough
 from physics import clt_experiment, make_distribution, sample_histogram
@@ -503,7 +504,7 @@ def _render_derivation(view, repetitions):
 
 def render():
     header(
-        "03",
+        EXPERIMENT_BY_ID["clt"].number,
         tr("Large numbers & the CLT", "大数定律与 CLT"),
         tr(
             "Individual observations can be irregular. What happens when we average independent observations?",

@@ -6,6 +6,7 @@ import numpy as np
 import plotly.graph_objects as go
 import streamlit as st
 
+from experiments import EXPERIMENT_BY_ID
 from i18n import tr
 from physics import thermal_contact
 from plot_theme import COLORS
@@ -154,7 +155,7 @@ def _count(value):
 
 def render():
     header(
-        6,
+        EXPERIMENT_BY_ID["thermal"].number,
         tr("Thermal contact & energy sharing", "热接触与能量分配"),
         tr(
             "Two systems exchange energy. Which split has the most microscopic arrangements?",

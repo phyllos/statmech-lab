@@ -69,9 +69,11 @@ Direct links use `?lab=<id>` and an optional `&lang=en` or `&lang=zh`. Experimen
 
 ```text
 app.py                 Application entry point and navigation
+experiments.py         Shared experiment metadata and page loading
 i18n.py                Language selection and display text
 state.py               Session-local experiment persistence
-glossary.py            Bilingual terms and contextual quick references
+glossary_data.py       Bilingual term content and curated references
+glossary.py            Term search and glossary presentation
 physics.py             Pure numerical models, without UI or file effects
 distribution_ui.py     Shared distribution names, parameters and descriptions
 plot_theme.py          Semantic colors shared by interactive and static plots
