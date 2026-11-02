@@ -16,6 +16,7 @@ English · [简体中文](docs/zh-CN/CHANGELOG.md) · [Project overview](README.
 
 ### Changed
 
+- Separate bilingual glossary content from search and presentation, using named fields for term entries.
 - Separate controls, figure builders and explanations in the probability and microstates pages, preserving interactions and chart exports.
 - Improve shared-axis boxplot labels and legends on narrow screens while retaining full hover readouts.
 - Use teal markers with white outlines for selected theoretical values in the entropy and inverse-temperature plots.

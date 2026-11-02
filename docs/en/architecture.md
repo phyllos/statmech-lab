@@ -15,7 +15,8 @@ The app keeps calculations independent from Streamlit. Pages compose those calcu
 | `styles/app.css` | Responsive layout, spacing, colors and control-bar positioning |
 | `interactions.py` | Saved comparisons and the sampling walkthrough |
 | `labs/` | Experiment-specific controls and plot composition |
-| `glossary.py` | Searchable bilingual definitions and related terms |
+| `glossary_data.py` | Bilingual term entries, topic membership and curated footer selections |
+| `glossary.py` | Term search, filtering and reference presentation |
 | `app.py` | Navigation, session restoration and page composition |
 | `export_figures.py` | Batch Matplotlib exports using the same numerical models |
 
@@ -41,9 +42,11 @@ Defaults are initialized once with `state.initialize_controls`; keyed widgets th
 
 - Put calculations in `physics.py` (or a dedicated pure module when a topic grows), with tests for known limits and assumptions.
 - Implement `render()` under `labs/`; use `chart`, `metric_row`, stable widget keys and `tr` for bilingual labels.
-- Add navigation and page selection in `app.py`; register any new control prefix in `state.py` and related terms in `glossary.py`.
+- Add navigation and page selection in `app.py`; register any new control prefix in `state.py`, term content in `glossary_data.py` and the glossary topic label in `glossary.py`.
 - Test model limits, language switching and glossary navigation, plus resampling where applicable. A sample estimate must never stand in for a nonexistent population moment.
 - Review the Docker runtime file list when adding top-level modules or assets.
+
+Glossary entries use keyword-only fields and keep both languages together for translation review. `related_lab` assigns terms to topic filters; `RELATED_IDS` selects and orders the shorter references shown below each experiment. These lists have distinct purposes. Data tests check unique term IDs, required bilingual text and valid experiment/term references. The content module has no Streamlit dependency; `glossary.py` retains the search and rendering entry points.
 
 ## Verification
 
