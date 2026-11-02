@@ -21,23 +21,8 @@ def _beta_label(value):
     return f"{value:.3g}"
 
 
-def render():
+def _controls():
     initialize_controls(ent_n=40)
-    header(
-        "04",
-        tr("Microstates & entropy", "微观态与熵"),
-        tr(
-            "How many distinct microscopic arrangements can realize the same total energy?",
-            "同一个总能量，可以由多少种不同的微观排列实现？",
-        ),
-    )
-    st.caption(
-        tr(
-            "N distinguishable, noninteracting units · two energy levels, 0 and ε · fixed energy E = qε.",
-            "N 个可区分、无相互作用的单元 · 两个能级 0 与 ε · 固定能量 E = qε。",
-        )
-    )
-
     with control_panel(
         "entropy",
         action_key="ent_shuffle",
@@ -54,9 +39,10 @@ def render():
         with c2:
             q = st.slider(tr("Excited units q", "激发态单元数 q"), 0, n, key="ent_q")
 
-    data = two_level(n, q)
-    seed = 51504 + st.session_state.get("ent_draw", 0)
-    state = np.asarray(sample_microstate(n, q, seed))
+    return n, q, 51504 + st.session_state.get("ent_draw", 0)
+
+
+def _render_metrics(n, q, data):
     log_omega = float(data["selected_log_multiplicity"])
     omega = math.comb(n, q)
     omega_label = f"{omega:,}" if omega < 1_000_000 else f"{omega:.3g}"
@@ -87,6 +73,9 @@ def render():
         ]
     )
 
+
+def _microstate_figure(state):
+    n = len(state)
     columns = min(20, n)
     positions = np.arange(n)
     fig = go.Figure()
@@ -115,6 +104,99 @@ def render():
         yaxis=dict(visible=False, range=[-math.ceil(n / columns) + 0.3, 0.7], fixedrange=True),
         margin=dict(l=15, r=15, t=10, b=30),
     )
+    return fig
+
+
+def _entropy_figure(n, q, data):
+    fractions = np.asarray(data["q_grid"]) / n
+    log_omega = float(data["selected_log_multiplicity"])
+    exact = np.asarray(data["entropy_per_particle"])
+    dense = np.linspace(0, 1, 401)
+    asymptotic = -(xlogy(dense, dense) + xlogy(1 - dense, 1 - dense))
+    fig = go.Figure(
+        go.Scatter(
+            x=fractions,
+            y=exact,
+            mode="lines",
+            name=tr("Exact: ln Ω / N", "精确：ln Ω / N"),
+            line=dict(color=COLORS["theory"], width=3),
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=dense,
+            y=asymptotic,
+            mode="lines",
+            name=tr("Stirling approximation", "Stirling 大 N 近似"),
+            line=dict(color=COLORS["muted"], width=1.8, dash="dash"),
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=[q / n],
+            y=[log_omega / n],
+            mode="markers",
+            name=tr("Selected energy", "当前能量"),
+            marker=dict(color=COLORS["theory"], size=12, line=dict(color="white", width=2)),
+        )
+    )
+    fig.update_layout(
+        height=350,
+        xaxis_title=tr("Excited fraction x = q/N", "激发比例 x = q/N"),
+        yaxis_title=tr("Entropy per unit S/(Nk_B)", "每单元熵 S/(Nk_B)"),
+        xaxis_range=[0, 1],
+    )
+    return fig
+
+
+def _beta_figure(n, q, beta):
+    interior = np.linspace(0.005, 0.995, 399)
+    betas = np.log((1 - interior) / interior)
+    fig = go.Figure(
+        go.Scatter(
+            x=interior,
+            y=betas,
+            mode="lines",
+            name=tr("β ε · large N", "β ε · 大 N 近似"),
+            line=dict(color=COLORS["accent"], width=3),
+        )
+    )
+    fig.add_hline(y=0, line_color=COLORS["muted"], line_width=1)
+    fig.add_vrect(x0=0.5, x1=1, fillcolor="rgba(120,104,176,.07)", line_width=0)
+    fig.add_annotation(
+        x=0.98,
+        xref="paper",
+        y=0.04,
+        yref="paper",
+        text=tr("Population inversion · β < 0", "粒子数反转 · β < 0"),
+        showarrow=False,
+        xanchor="right",
+        yanchor="bottom",
+        borderpad=3,
+        bgcolor="rgba(255,255,255,.88)",
+        font=dict(size=11, color=COLORS["accent"]),
+    )
+    if np.isfinite(beta):
+        fig.add_trace(
+            go.Scatter(
+                x=[q / n],
+                y=[beta],
+                mode="markers",
+                name=tr("Selected energy", "当前能量"),
+                marker=dict(color=COLORS["theory"], size=12, line=dict(color="white", width=2)),
+            )
+        )
+    fig.update_layout(
+        height=350,
+        xaxis_title=tr("Excited fraction x = q/N", "激发比例 x = q/N"),
+        yaxis_title="β ε = ε/(k_BT)",
+        xaxis_range=[0, 1],
+    )
+    return fig
+
+
+def _render_figures(n, q, state, data):
+    fig = _microstate_figure(state)
     chart(
         fig,
         key="ent_state_chart",
@@ -131,45 +213,9 @@ def render():
         )
     )
 
-    fractions = np.asarray(data["q_grid"]) / n
     left, right = st.columns(2)
     with left:
-        exact = np.asarray(data["entropy_per_particle"])
-        dense = np.linspace(0, 1, 401)
-        asymptotic = -(xlogy(dense, dense) + xlogy(1 - dense, 1 - dense))
-        fig = go.Figure(
-            go.Scatter(
-                x=fractions,
-                y=exact,
-                mode="lines",
-                name=tr("Exact: ln Ω / N", "精确：ln Ω / N"),
-                line=dict(color=COLORS["theory"], width=3),
-            )
-        )
-        fig.add_trace(
-            go.Scatter(
-                x=dense,
-                y=asymptotic,
-                mode="lines",
-                name=tr("Stirling approximation", "Stirling 大 N 近似"),
-                line=dict(color=COLORS["muted"], width=1.8, dash="dash"),
-            )
-        )
-        fig.add_trace(
-            go.Scatter(
-                x=[q / n],
-                y=[log_omega / n],
-                mode="markers",
-                name=tr("Selected energy", "当前能量"),
-                marker=dict(color=COLORS["theory"], size=12, line=dict(color="white", width=2)),
-            )
-        )
-        fig.update_layout(
-            height=350,
-            xaxis_title=tr("Excited fraction x = q/N", "激发比例 x = q/N"),
-            yaxis_title=tr("Entropy per unit S/(Nk_B)", "每单元熵 S/(Nk_B)"),
-            xaxis_range=[0, 1],
-        )
+        fig = _entropy_figure(n, q, data)
         chart(
             fig,
             key="ent_entropy_chart",
@@ -184,48 +230,7 @@ def render():
             )
         )
     with right:
-        interior = np.linspace(0.005, 0.995, 399)
-        betas = np.log((1 - interior) / interior)
-        fig = go.Figure(
-            go.Scatter(
-                x=interior,
-                y=betas,
-                mode="lines",
-                name=tr("β ε · large N", "β ε · 大 N 近似"),
-                line=dict(color=COLORS["accent"], width=3),
-            )
-        )
-        fig.add_hline(y=0, line_color=COLORS["muted"], line_width=1)
-        fig.add_vrect(x0=0.5, x1=1, fillcolor="rgba(120,104,176,.07)", line_width=0)
-        fig.add_annotation(
-            x=0.98,
-            xref="paper",
-            y=0.04,
-            yref="paper",
-            text=tr("Population inversion · β < 0", "粒子数反转 · β < 0"),
-            showarrow=False,
-            xanchor="right",
-            yanchor="bottom",
-            borderpad=3,
-            bgcolor="rgba(255,255,255,.88)",
-            font=dict(size=11, color=COLORS["accent"]),
-        )
-        if np.isfinite(beta):
-            fig.add_trace(
-                go.Scatter(
-                    x=[q / n],
-                    y=[beta],
-                    mode="markers",
-                    name=tr("Selected energy", "当前能量"),
-                    marker=dict(color=COLORS["theory"], size=12, line=dict(color="white", width=2)),
-                )
-            )
-        fig.update_layout(
-            height=350,
-            xaxis_title=tr("Excited fraction x = q/N", "激发比例 x = q/N"),
-            yaxis_title="β ε = ε/(k_BT)",
-            xaxis_range=[0, 1],
-        )
+        fig = _beta_figure(n, q, float(data["beta_epsilon"][q]))
         chart(
             fig,
             key="ent_beta_chart",
@@ -239,6 +244,10 @@ def render():
             )
         )
 
+    return entropy_figure
+
+
+def _render_insight(n, q):
     if q == 0 or q == n:
         insight(
             tr("Only one arrangement", "只有一种排列"),
@@ -280,6 +289,9 @@ def render():
         icon=":material/info:",
     )
 
+
+def _render_derivation(n, q):
+    omega = math.comb(n, q)
     with st.expander(
         tr("Mathematics · from counting to temperature", "数学说明 · 从组合计数到温度")
     ):
@@ -310,4 +322,30 @@ def render():
             )
         )
         st.caption(tr(f"Exact integer Ω: {omega:,}", f"当前 Ω 的精确整数：{omega:,}"))
+
+
+def render():
+    header(
+        "04",
+        tr("Microstates & entropy", "微观态与熵"),
+        tr(
+            "How many distinct microscopic arrangements can realize the same total energy?",
+            "同一个总能量，可以由多少种不同的微观排列实现？",
+        ),
+    )
+    st.caption(
+        tr(
+            "N distinguishable, noninteracting units · two energy levels, 0 and ε · fixed energy E = qε.",
+            "N 个可区分、无相互作用的单元 · 两个能级 0 与 ε · 固定能量 E = qε。",
+        )
+    )
+
+    n, q, seed = _controls()
+    data = two_level(n, q)
+    state = np.asarray(sample_microstate(n, q, seed))
+
+    _render_metrics(n, q, data)
+    entropy_figure = _render_figures(n, q, state, data)
+    _render_insight(n, q)
+    _render_derivation(n, q)
     download_figure(entropy_figure, "two_level_entropy")

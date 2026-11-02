@@ -1,5 +1,7 @@
 """Probability, sampling and Tukey boxplots, with a shared horizontal scale."""
 
+from dataclasses import dataclass
+
 import numpy as np
 import plotly.graph_objects as go
 import streamlit as st
@@ -43,7 +45,33 @@ def _shape(name):
     return 3.0
 
 
-def render():
+@dataclass(frozen=True)
+class _Controls:
+    name: str
+    shape: float
+    n: int
+    probabilities: tuple[float, float]
+    align: bool
+    view: str
+    show_fences: bool
+    seed: int
+
+
+@dataclass(frozen=True)
+class _View:
+    """Shared coordinates for the PDF, CDF and sample plot."""
+
+    lo: float
+    hi: float
+    p_lo: float
+    p_hi: float
+    left: float
+    right: float
+    x: np.ndarray
+    selected_x: np.ndarray
+
+
+def _controls():
     initialize_controls(
         dist_shape_pareto=3.0,
         dist_shape_lognormal=0.8,
@@ -58,14 +86,6 @@ def render():
     choice_labels = {
         name: distribution_label(name, lang, parameters=True) for name in DISTRIBUTIONS
     }
-    header(
-        "01",
-        tr("Distributions & boxplots", "分布与箱型图"),
-        tr(
-            "From probability areas to observed data: connect the PDF, CDF, and boxplot in one experiment.",
-            "从一段面积到一组数据：让 PDF、CDF 和箱型图讲述同一个概率故事。",
-        ),
-    )
     with control_panel(
         "distributions",
         action_key="dist_resample",
@@ -144,11 +164,21 @@ def render():
                         "显示样本阈值 Q₁ − 1.5 IQR 与 Q₃ + 1.5 IQR。围栏外观测仍保留标记；不影响选中的概率区间。",
                     ),
                 )
-    rv = make_distribution(name, shape, align)
+
     seed = st.session_state.get("dist_seed", 515)
-    sample = rv.rvs(size=n, random_state=np.random.default_rng(seed))
-    summary = sample_summary(sample)
-    settings = dict(name=name, shape=shape, align=align, n=n, seed=seed)
+    return _Controls(name, shape, n, probabilities, align, view, show_fences, seed), tools_row
+
+
+def _comparison_sample(rv, controls, tools_row):
+    """Restore a compatible saved sample without drawing a new seed."""
+    lang = language()
+    settings = dict(
+        name=controls.name,
+        shape=controls.shape,
+        align=controls.align,
+        n=controls.n,
+        seed=controls.seed,
+    )
 
     def describe(saved):
         model = distribution_description(saved["name"], lang, shape=saved["shape"])
@@ -164,7 +194,11 @@ def render():
         if reference
         else None
     )
-    previous_summary = sample_summary(previous) if previous is not None else None
+
+    return previous
+
+
+def _prepare_view(rv, view, probabilities):
     if view == "body":
         tq1, tq3 = rv.ppf([0.25, 0.75])
         tiqr = tq3 - tq1
@@ -178,8 +212,13 @@ def render():
     # the visible x range by several orders of magnitude.
     x = rv.ppf(np.linspace(p_lo, p_hi, 850))
     selected_x = rv.ppf(np.linspace(probabilities[0], probabilities[1], 300))
-    selected = (sample >= left) & (sample <= right)
-    outside = int(np.count_nonzero((sample < lo) | (sample > hi)))
+
+    return _View(lo, hi, p_lo, p_hi, left, right, x, selected_x)
+
+
+def _render_metrics(rv, sample, summary, probabilities, view):
+    n = len(sample)
+    selected = (sample >= view.left) & (sample <= view.right)
     metric_row(
         [
             (
@@ -205,6 +244,10 @@ def render():
         ]
     )
 
+
+def _pdf_figure(rv, sample, previous, view):
+    lo, hi, p_lo, p_hi = view.lo, view.hi, view.p_lo, view.p_hi
+    x, selected_x = view.x, view.selected_x
     pdf = go.Figure()
     edges = rv.ppf(np.linspace(p_lo, p_hi, 38))
     density = histogram_density(sample, edges)
@@ -263,6 +306,12 @@ def render():
     pdf.update_xaxes(range=[lo, hi])
     pdf.update_yaxes(rangemode="tozero")
 
+    return pdf
+
+
+def _cdf_figure(rv, sample, previous, probabilities, view):
+    lo, hi, left, right = view.lo, view.hi, view.left, view.right
+    x, n = view.x, len(sample)
     cdf = go.Figure()
     ordered = np.sort(sample)
     visible_x = ordered[(ordered >= lo) & (ordered <= hi)]
@@ -319,6 +368,12 @@ def render():
     )
     cdf.update_xaxes(range=[lo, hi])
     cdf.update_yaxes(range=[0, 1])
+
+    return cdf
+
+
+def _render_probability_figures(pdf, cdf, align, view, outside, n):
+    left, right = view.left, view.right
     if align:
         st.caption(
             tr(
@@ -346,8 +401,9 @@ def render():
         )
     )
 
-    compact = compact_chart("dist_box_width")
-    box = go.Figure()
+
+def _add_sample_layers(box, sample, summary, previous_summary, compact):
+    n = len(sample)
     jitter = np.random.default_rng(19).uniform(-0.10, 0.10, n)
     outliers = (sample < summary["lower_fence"]) | (sample > summary["upper_fence"])
     for mask, label, color in [
@@ -374,7 +430,7 @@ def render():
                 ),
             )
         )
-    sample_row, population_row = (1.4, 2.1) if previous is not None else (0.7, 1.4)
+    sample_row, population_row = (1.4, 2.1) if previous_summary is not None else (0.7, 1.4)
     box.add_trace(
         go.Box(
             q1=[summary["q1"]],
@@ -445,6 +501,11 @@ def render():
                 hovertemplate="%{text}: %{x:.3g}<extra></extra>",
             )
         )
+
+    return sample_row, population_row
+
+
+def _add_population_quartiles(box, rv, population_row, compact):
     tq = rv.ppf([0.25, 0.5, 0.75])
     box.add_trace(
         go.Scatter(
@@ -484,48 +545,58 @@ def render():
                 font=dict(size=11, color=COLORS["ink"]),
                 captureevents=False,
             )
+
+
+def _add_fences(box, summary, view, compact):
+    lo, hi = view.lo, view.hi
+    for label, val, anchor, shift in [
+        (
+            tr("Lower", "下围栏") if compact else tr("Lower fence", "下围栏"),
+            summary["lower_fence"],
+            "left",
+            5,
+        ),
+        (
+            tr("Upper", "上围栏") if compact else tr("Upper fence", "上围栏"),
+            summary["upper_fence"],
+            "right",
+            -5,
+        ),
+    ]:
+        box.add_vline(x=val, line_dash="dot", line_color=COLORS["muted"])
+        if lo <= val <= hi:
+            box.add_annotation(
+                x=val,
+                xref="x",
+                y=0.98,
+                yref="paper",
+                text=label,
+                hovertext=(
+                    tr("Lower fence", "下围栏") if anchor == "left" else tr("Upper fence", "上围栏")
+                )
+                + f": {val:.3g}",
+                showarrow=False,
+                xanchor=anchor,
+                yanchor="top",
+                xshift=shift,
+                bgcolor="rgba(255,255,255,.92)",
+                borderpad=3,
+                font=dict(size=11, color=COLORS["muted"]),
+            )
+
+
+def _box_figure(rv, sample, summary, previous_summary, view, *, show_fences, compact):
+    box = go.Figure()
+    sample_row, population_row = _add_sample_layers(box, sample, summary, previous_summary, compact)
+    _add_population_quartiles(box, rv, population_row, compact)
+    left, right = view.left, view.right
     box.add_vrect(
         x0=left, x1=right, fillcolor=COLORS["theory"], opacity=0.06, line_width=0, layer="below"
     )
     if show_fences:
-        for label, val, anchor, shift in [
-            (
-                tr("Lower", "下围栏") if compact else tr("Lower fence", "下围栏"),
-                summary["lower_fence"],
-                "left",
-                5,
-            ),
-            (
-                tr("Upper", "上围栏") if compact else tr("Upper fence", "上围栏"),
-                summary["upper_fence"],
-                "right",
-                -5,
-            ),
-        ]:
-            box.add_vline(x=val, line_dash="dot", line_color=COLORS["muted"])
-            if lo <= val <= hi:
-                box.add_annotation(
-                    x=val,
-                    xref="x",
-                    y=0.98,
-                    yref="paper",
-                    text=label,
-                    hovertext=(
-                        tr("Lower fence", "下围栏")
-                        if anchor == "left"
-                        else tr("Upper fence", "上围栏")
-                    )
-                    + f": {val:.3g}",
-                    showarrow=False,
-                    xanchor=anchor,
-                    yanchor="top",
-                    xshift=shift,
-                    bgcolor="rgba(255,255,255,.92)",
-                    borderpad=3,
-                    font=dict(size=11, color=COLORS["muted"]),
-                )
+        _add_fences(box, summary, view, compact)
     rows = [(0, tr("Raw", "样本") if compact else tr("Raw sample", "原始样本"))]
-    if previous is not None:
+    if previous_summary is not None:
         rows.append((0.7, tr("Saved", "保留") if compact else tr("Saved sample", "保留样本")))
     rows.extend(
         [
@@ -540,7 +611,7 @@ def render():
         ]
     )
     box.update_layout(
-        height=(390 if previous is not None else 320) + (40 if compact else 0),
+        height=(390 if previous_summary is not None else 320) + (40 if compact else 0),
         hovermode="closest",
         xaxis_title=tr("x · shared scale", "同一尺度下的 x"),
         yaxis=dict(
@@ -551,7 +622,12 @@ def render():
         ),
         margin=dict(l=45 if compact else 95),
     )
-    box.update_xaxes(range=[lo, hi])
+    box.update_xaxes(range=[view.lo, view.hi])
+
+    return box
+
+
+def _render_boxplot(box, summary):
     chart(box, key="dist_box", title=tr("One axis, three views", "同一条数轴，三种观察方式"))
     st.caption(
         tr(
@@ -559,7 +635,11 @@ def render():
             f"有 {summary['outlier_count']} 个围栏外观测；围栏是阈值，须线停在实际观测值。",
         )
     )
-    download_figure(box, "distribution_boxplot")
+
+
+def _render_derivation(summary, previous, view, outside, n, seed):
+    lo, hi, p_lo, p_hi = view.lo, view.hi, view.p_lo, view.p_hi
+    left, right = view.left, view.right
     with st.expander(tr("Definitions & conventions", "数学定义与实验约定")):
         st.caption(
             tr(
@@ -605,3 +685,41 @@ def render():
                 f"随机种子：{seed}。调整显示选项不改变这批随机样本；“重新抽样”才会更换种子。",
             )
         )
+
+
+def render():
+    header(
+        "01",
+        tr("Distributions & boxplots", "分布与箱型图"),
+        tr(
+            "From probability areas to observed data: connect the PDF, CDF, and boxplot in one experiment.",
+            "从一段面积到一组数据：让 PDF、CDF 和箱型图讲述同一个概率故事。",
+        ),
+    )
+    controls, tools_row = _controls()
+    rv = make_distribution(controls.name, controls.shape, controls.align)
+    sample = rv.rvs(size=controls.n, random_state=np.random.default_rng(controls.seed))
+    summary = sample_summary(sample)
+    previous = _comparison_sample(rv, controls, tools_row)
+    previous_summary = sample_summary(previous) if previous is not None else None
+    view = _prepare_view(rv, controls.view, controls.probabilities)
+    outside = int(np.count_nonzero((sample < view.lo) | (sample > view.hi)))
+
+    _render_metrics(rv, sample, summary, controls.probabilities, view)
+    pdf = _pdf_figure(rv, sample, previous, view)
+    cdf = _cdf_figure(rv, sample, previous, controls.probabilities, view)
+    _render_probability_figures(pdf, cdf, controls.align, view, outside, controls.n)
+
+    compact = compact_chart("dist_box_width")
+    box = _box_figure(
+        rv,
+        sample,
+        summary,
+        previous_summary,
+        view,
+        show_fences=controls.show_fences,
+        compact=compact,
+    )
+    _render_boxplot(box, summary)
+    download_figure(box, "distribution_boxplot")
+    _render_derivation(summary, previous, view, outside, controls.n, controls.seed)

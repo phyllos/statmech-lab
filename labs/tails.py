@@ -55,7 +55,7 @@ def _description(name, shape):
     )
 
 
-def render():
+def _controls():
     initialize_controls(
         tail_excess=False,
         tail_logx=True,
@@ -64,14 +64,6 @@ def render():
         tail_nu=5.0,
     )
     labels = {name: distribution_label(name, language()) for name in DISTRIBUTIONS}
-    header(
-        "02",
-        tr("Skewness, kurtosis & tails", "偏度、峰度与尾部"),
-        tr(
-            "Shape, moments, and tail decay answer different questions. Explore their connections using a reproducible sample.",
-            "形状、矩和尾部衰减各回答一个问题。用一次抽样，把它们放在一起观察。",
-        ),
-    )
     with control_panel(
         "tails",
         action_key="tail_resample",
@@ -124,18 +116,11 @@ def render():
                 logarithmic_x = st.toggle(
                     tr("Logarithmic tail x-axis", "尾部横轴使用对数"), key="tail_logx"
                 )
-    rv = make_distribution(name, shape)
-    moments = population_moments(rv)
-    seed = st.session_state.get("tail_seed", 1515)
-    sample = rv.rvs(size=4000, random_state=np.random.default_rng(seed))
-    k_name = "excess_kurtosis" if excess else "kurtosis"
-    k_label = (
-        tr("Excess kurtosis", "超额峰度") if excess else tr("Pearson kurtosis", "Pearson 峰度")
-    )
-    # Mid-sentence English form; "Pearson" is a proper noun and keeps its capital.
-    k_phrase = "excess kurtosis" if excess else "Pearson kurtosis"
-    theoretical_k = moments[k_name]
-    sample_k = float(stats.kurtosis(sample, fisher=excess, bias=False))
+
+    return name, shape, excess, logarithmic_x
+
+
+def _render_metrics(moments, theoretical_k, k_label, k_phrase):
     metric_row(
         [
             (
@@ -171,6 +156,8 @@ def render():
             )
         )
 
+
+def _shape_figure(name, shape):
     aligned = make_distribution(name, shape, align=True)
     normal = make_distribution("normal", align=True)
     shape_x = np.linspace(-3, 6, 700)
@@ -187,7 +174,7 @@ def render():
         go.Scatter(
             x=shape_x,
             y=aligned.pdf(shape_x),
-            name=labels[name],
+            name=distribution_label(name, language()),
             line=dict(color=COLORS["theory"], width=3),
             fill="tozeroy",
             fillcolor="rgba(8,126,139,.08)",
@@ -200,6 +187,12 @@ def render():
         yaxis_title=tr("Transformed density", "变换后的概率密度"),
     )
     pdf.update_yaxes(rangemode="tozero")
+
+    return pdf, float(aligned.cdf(-3) + aligned.sf(6))
+
+
+def _survival_figure(rv, name, logarithmic_x):
+    normal = make_distribution("normal", align=True)
     tail_distance = np.geomspace(0.1, 100, 500)
     median, q1, q3 = rv.ppf([0.5, 0.25, 0.75])
     threshold = median + tail_distance * (q3 - q1)
@@ -210,7 +203,7 @@ def render():
         go.Scatter(
             x=tail_distance,
             y=np.where(survival >= 1e-12, survival, np.nan),
-            name=labels[name],
+            name=distribution_label(name, language()),
             line=dict(color=COLORS["theory"], width=3),
         )
     )
@@ -230,6 +223,11 @@ def render():
     )
     sf.update_yaxes(type="log", range=[-8, 0])
     sf.update_xaxes(type="log" if logarithmic_x else "linear")
+
+    return sf
+
+
+def _render_shape_comparison(pdf, sf, outside_shape):
     a, b = st.columns(2)
     with a:
         chart(
@@ -247,7 +245,6 @@ def render():
                 "Probability beyond the same threshold", "超出同一距离阈值，究竟有多罕见？"
             ),
         )
-    outside_shape = float(aligned.cdf(-3) + aligned.sf(6))
     st.caption(
         tr(
             f"Same median and IQR · {outside_shape:.2%} of population probability lies outside the left plot. Off-screen tails are not zero.",
@@ -255,12 +252,8 @@ def render():
         )
     )
 
-    st.markdown(
-        tr(
-            "#### How does sample kurtosis change as data accumulate?",
-            "#### 同一个总体，样本峰度会怎样变化？",
-        )
-    )
+
+def _kurtosis_figure(sample, excess, theoretical_k, k_label, k_phrase):
     counts = np.unique(np.geomspace(20, len(sample), 80).astype(int))
     values = np.array(
         [stats.kurtosis(sample[:count], fisher=excess, bias=False) for count in counts]
@@ -291,6 +284,17 @@ def render():
         yaxis_title=k_label,
     )
     convergence.update_xaxes(type="log", hoverformat=",d")
+
+    return convergence
+
+
+def _render_sample_kurtosis(convergence, sample_k, theoretical_k, k_label, k_phrase):
+    st.markdown(
+        tr(
+            "#### How does sample kurtosis change as data accumulate?",
+            "#### 同一个总体，样本峰度会怎样变化？",
+        )
+    )
     chart(convergence, key="tail_sample_kurtosis", title=tr("Sample kurtosis", "样本峰度"))
     left, right = st.columns([1, 2])
     with left:
@@ -310,7 +314,9 @@ def render():
                     "样本可以算出一个数值，但这里没有有限的总体峰度可供估计。",
                 )
             )
-    download_figure(convergence, "sample_kurtosis")
+
+
+def _render_derivation(name, shape, outside_shape, seed):
     with st.expander(
         tr(
             "Why are kurtosis and tail behavior different concepts?",
@@ -352,3 +358,36 @@ def render():
                 f"随机种子：{seed}。当前实验只研究独立同分布的抽样，不模拟雪崩等微观动力学。",
             )
         )
+
+
+def render():
+    header(
+        "02",
+        tr("Skewness, kurtosis & tails", "偏度、峰度与尾部"),
+        tr(
+            "Shape, moments, and tail decay answer different questions. Explore their connections using a reproducible sample.",
+            "形状、矩和尾部衰减各回答一个问题。用一次抽样，把它们放在一起观察。",
+        ),
+    )
+    name, shape, excess, logarithmic_x = _controls()
+    rv = make_distribution(name, shape)
+    moments = population_moments(rv)
+    seed = st.session_state.get("tail_seed", 1515)
+    sample = rv.rvs(size=4000, random_state=np.random.default_rng(seed))
+    k_name = "excess_kurtosis" if excess else "kurtosis"
+    k_label = (
+        tr("Excess kurtosis", "超额峰度") if excess else tr("Pearson kurtosis", "Pearson 峰度")
+    )
+    # Mid-sentence English form; "Pearson" is a proper noun and keeps its capital.
+    k_phrase = "excess kurtosis" if excess else "Pearson kurtosis"
+    theoretical_k = moments[k_name]
+    sample_k = float(stats.kurtosis(sample, fisher=excess, bias=False))
+
+    _render_metrics(moments, theoretical_k, k_label, k_phrase)
+    pdf, outside_shape = _shape_figure(name, shape)
+    sf = _survival_figure(rv, name, logarithmic_x)
+    _render_shape_comparison(pdf, sf, outside_shape)
+    convergence = _kurtosis_figure(sample, excess, theoretical_k, k_label, k_phrase)
+    _render_sample_kurtosis(convergence, sample_k, theoretical_k, k_label, k_phrase)
+    download_figure(convergence, "sample_kurtosis")
+    _render_derivation(name, shape, outside_shape, seed)
